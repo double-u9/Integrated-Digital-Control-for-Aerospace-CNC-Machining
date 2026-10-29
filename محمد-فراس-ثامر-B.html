@@ -1,0 +1,2747 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Aerospace CNC Multi-Rate Digital Control Simulator | Mohammed Firas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap">
+  <!-- KaTeX for Professional Publication-Grade Mathematical Typesetting -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+
+  <style>
+    /* ---------------------------------------------------------------------------
+   GOOGLE MINIMALIST FROSTED GLASS THEME
+   Neutral Matte Off-White Canvas (Zero Yellow) + Crisp Frosted Glass Cards
+--------------------------------------------------------------------------- */
+    :root {
+      /* Matte Off-White Background (Soothing, Non-Glaring, Absolutely Zero Yellow) */
+      --bg: #f4f5f7;
+      --bg-gradient: radial-gradient(at 0% 0%, rgba(237, 231, 246, 0.75) 0, transparent 60%), radial-gradient(at 100% 0%, rgba(238, 242, 250, 0.7) 0, transparent 50%), radial-gradient(at 50% 100%, rgba(240, 235, 248, 0.65) 0, transparent 55%);
+      --tx: #0f172a;
+      --tx-dim: #475569;
+      --mu: #64748b;
+      --hair: rgba(0, 0, 0, 0.05);
+      --line: rgba(0, 0, 0, 0.07);
+
+      /* Modern Crisp Frosted Glass (Clean, Luminous, Not Off-White) */
+      --glass-bg: rgba(255, 255, 255, 0.78);
+      --glass-bg-hover: rgba(255, 255, 255, 0.92);
+      --glass-border: rgba(255, 255, 255, 0.85);
+      --glass-border-subtle: rgba(0, 0, 0, 0.06);
+      --glass-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+      --glass-shadow-hover: 0 10px 28px -4px rgba(15, 23, 42, 0.07), 0 4px 10px -2px rgba(15, 23, 42, 0.03);
+      --glass-highlight: rgba(255, 255, 255, 0.95);
+
+      /* Google-Style Vibrant Accents */
+      --b: #2563eb;
+      /* Loop #28 Google Blue */
+      --g: #10b981;
+      /* Loop #44 Google Emerald */
+      --a: #f59e0b;
+      /* Loop #41 Amber / Topaz */
+      --r: #ef4444;
+      /* Alert / Saturation Coral */
+      --p: #7c3aed;
+      /* Google Purple / Lavender Accent */
+      --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    *,
+    *:before,
+    *:after {
+      box-sizing: border-box;
+      font-variant-numeric: tabular-nums !important;
+    }
+
+    * {
+      margin: 0;
+    }
+
+    body {
+      font: 14px/1.55 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: var(--tx);
+      background: var(--bg);
+      background-image: var(--bg-gradient);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Ambient Glow Orbs (Soft, muted daylight lavender & violet mist from user images) */
+    .glow-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .glow-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(140px);
+      will-change: transform;
+      pointer-events: none;
+    }
+
+    .orb-purple {
+      width: 760px;
+      height: 760px;
+      background: radial-gradient(circle, rgba(196, 161, 248, 0.32) 0%, rgba(225, 215, 252, 0.16) 50%, transparent 75%);
+      top: -160px;
+      right: 4%;
+      animation: floatOrb 22s ease-in-out infinite alternate;
+    }
+
+    .orb-blue {
+      width: 780px;
+      height: 780px;
+      background: radial-gradient(circle, rgba(210, 190, 248, 0.26) 0%, rgba(228, 235, 252, 0.14) 55%, transparent 75%);
+      bottom: 0;
+      left: -100px;
+      animation: floatOrb 26s ease-in-out infinite alternate-reverse;
+    }
+
+    .orb-cyan {
+      width: 540px;
+      height: 540px;
+      background: radial-gradient(circle, rgba(224, 210, 250, 0.22) 0%, transparent 70%);
+      top: 40%;
+      right: 25%;
+      animation: floatOrb 18s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatOrb {
+      0% {
+        transform: translate(0, 0) scale(1);
+      }
+
+      50% {
+        transform: translate(30px, -20px) scale(1.05);
+      }
+
+      100% {
+        transform: translate(-20px, 30px) scale(0.96);
+      }
+    }
+
+    /* Halftone Dot Matrix Canvas (Matching user's Image 1 on matte off-white canvas) */
+    .bg-dots {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    button {
+      font-family: inherit;
+    }
+
+    .ic {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex: none;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Sticky Frosted Header (Clean Glassy Surface) */
+    .hdr {
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(24px) saturate(160%);
+      -webkit-backdrop-filter: blur(24px) saturate(160%);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      border-bottom: 1px solid var(--glass-border-subtle);
+      box-shadow: 0 2px 14px rgba(15, 23, 42, 0.03);
+    }
+
+    .row1,
+    .row2,
+    .main {
+      max-width: 1640px;
+      margin: 0 auto;
+      padding: 0 24px;
+      width: 100%;
+      position: relative;
+      z-index: 2;
+    }
+
+    .row1 {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px 20px;
+      padding-top: 13px;
+      padding-bottom: 13px;
+    }
+
+    .brand {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .brand>i {
+      width: 4px;
+      height: 44px;
+      background: linear-gradient(180deg, var(--p), var(--b));
+      border-radius: 999px;
+    }
+
+    .eyb {
+      font: 600 11px var(--mono);
+      color: var(--p);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .brand h1 {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -.02em;
+      line-height: 1.25;
+      color: var(--tx);
+    }
+
+    .chip {
+      font: 500 11px var(--mono);
+      color: var(--tx-dim);
+      background: rgba(0, 0, 0, 0.04);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+
+    .chip2 {
+      font: 500 11px var(--mono);
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid var(--glass-border-subtle);
+      padding: 4px 11px;
+      border-radius: 999px;
+      color: var(--tx-dim);
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+    }
+
+    /* Researcher Badge: Frosted Capsule Pill */
+    .cred {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 5px 14px 5px 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid rgba(124, 58, 237, 0.2);
+      box-shadow: 0 2px 10px rgba(124, 58, 237, 0.06);
+      backdrop-filter: blur(12px);
+    }
+
+    .cred .mf {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font: 700 12px var(--mono);
+      color: #fff;
+      background: linear-gradient(135deg, #8b5cf6, #6366f1);
+      box-shadow: 0 2px 6px rgba(124, 58, 237, 0.35);
+    }
+
+    .cred small {
+      display: block;
+      font: 500 10px var(--mono);
+      color: var(--mu);
+      letter-spacing: .02em;
+    }
+
+    .cred b {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--tx);
+    }
+
+    /* Control Capsule Segment */
+    .ctl {
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      border-radius: 999px;
+      backdrop-filter: blur(16px);
+    }
+
+    .btn {
+      font: 600 11.5px var(--mono);
+      color: var(--tx-dim);
+      background: transparent;
+      border: 0;
+      border-radius: 999px;
+      padding: 6px 14px;
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      cursor: pointer;
+      transition: all .2s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--tx);
+    }
+
+    .btn.run {
+      background: #10b981;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+    }
+
+    .btn.run:hover {
+      background: #059669;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.45);
+    }
+
+    .btn.pause {
+      background: #f59e0b;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+    }
+
+    .btn.pause:hover {
+      background: #d97706;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.45);
+    }
+
+    .bar2 {
+      background: rgba(255, 255, 255, 0.72);
+      border-top: 1px solid rgba(0, 0, 0, 0.05);
+      backdrop-filter: blur(20px);
+    }
+
+    .row2 {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 8px;
+      padding-bottom: 8px;
+    }
+
+    /* Segmented Tabs: Capsule Design */
+    .seg {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding: 4px;
+      background: rgba(0, 0, 0, 0.05);
+      border: 1px solid rgba(0, 0, 0, 0.04);
+      border-radius: 999px;
+    }
+
+    .seg button {
+      font: 600 11.5px var(--mono);
+      color: var(--mu);
+      background: transparent;
+      border: 0;
+      border-radius: 999px;
+      padding: 7px 15px;
+      cursor: pointer;
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      transition: all .2s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .seg button:hover {
+      color: var(--tx);
+      background: rgba(255, 255, 255, 0.6);
+    }
+
+    .seg button.tab-btn-active {
+      background: #ffffff;
+      color: var(--tx);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.9);
+    }
+
+    /* Disturbance Buttons: Frosted Capsule Pills */
+    .trgs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .trgs>span {
+      font: 500 11px var(--mono);
+      color: var(--mu);
+    }
+
+    .trg {
+      --c: var(--b);
+      font: 600 11.5px var(--mono);
+      color: var(--tx-dim);
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(0, 0, 0, 0.07);
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+      border-radius: 999px;
+      padding: 6px 14px;
+      cursor: pointer;
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      transition: all .2s cubic-bezier(.4, 0, .2, 1);
+      backdrop-filter: blur(10px);
+    }
+
+    .trg .ic {
+      color: var(--c);
+    }
+
+    .trg:hover {
+      background: #ffffff;
+      border-color: var(--c);
+      color: var(--c);
+      box-shadow: 0 4px 14px color-mix(in srgb, var(--c) 20%, transparent);
+      transform: translateY(-1px);
+    }
+
+    .trg:active {
+      transform: translateY(1px);
+    }
+
+    .trg.live {
+      background: var(--c);
+      color: #fff;
+      border-color: var(--c);
+      box-shadow: 0 0 18px color-mix(in srgb, var(--c) 50%, transparent);
+      animation: glowPulseLight 1.2s ease-in-out infinite alternate;
+    }
+
+    .trg.live .ic {
+      color: #fff;
+    }
+
+    @keyframes glowPulseLight {
+      from {
+        box-shadow: 0 2px 8px color-mix(in srgb, var(--c) 40%, transparent);
+      }
+
+      to {
+        box-shadow: 0 4px 20px color-mix(in srgb, var(--c) 70%, transparent);
+      }
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--p);
+      outline-offset: 2px;
+    }
+
+    /* Main Container & KPI Ribbon */
+    .main {
+      flex: 1;
+      padding-top: 22px;
+      padding-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .kpi {
+      --c: var(--g);
+      position: relative;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      padding: 16px 18px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow: hidden;
+      box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
+      transition: transform .2s, box-shadow .2s;
+    }
+
+    .kpi:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--glass-shadow-hover);
+    }
+
+    .kpi:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--c);
+      border-radius: 3px 3px 0 0;
+    }
+
+    .kh {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .kh>span:first-child {
+      font: 600 11px var(--mono);
+      color: var(--tx-dim);
+    }
+
+    .kv {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .kv b {
+      font: 700 28px/1 var(--mono);
+      letter-spacing: -.02em;
+      color: var(--tx);
+    }
+
+    .kv small {
+      font: 11px var(--mono);
+      color: var(--mu);
+    }
+
+    /* Capsule Pill Badges */
+    .pill {
+      font: 700 10.5px var(--mono);
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.05);
+      color: var(--tx-dim);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      white-space: nowrap;
+    }
+
+    .pill.c {
+      background: color-mix(in srgb, var(--c) 12%, #ffffff);
+      color: color-mix(in srgb, var(--c) 80%, #000);
+      border-color: color-mix(in srgb, var(--c) 30%, transparent);
+    }
+
+    .pill.ok {
+      background: #dcfce7;
+      color: #15803d;
+      border-color: #bbf7d0;
+    }
+
+    .pill.bad {
+      background: #fee2e2;
+      color: #b91c1c;
+      border-color: #fecaca;
+    }
+
+    .bar {
+      height: 6px;
+      background: rgba(0, 0, 0, 0.06);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bar i {
+      display: block;
+      height: 100%;
+      background: var(--c);
+      transition: width .15s;
+      border-radius: 999px;
+    }
+
+    .bar.bad i {
+      background: var(--r);
+    }
+
+    .bar u {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--tx);
+      opacity: .7;
+    }
+
+    .spk {
+      width: 100%;
+      height: 24px;
+      display: block;
+    }
+
+    .spk polyline {
+      fill: none;
+      stroke: var(--c);
+      stroke-width: 1.8;
+      vector-effect: non-scaling-stroke;
+    }
+
+    /* Arbitration Card: Frosted Lavender Style */
+    .kpi.dk {
+      background: rgba(246, 242, 254, 0.9);
+      border-color: rgba(167, 139, 250, 0.35);
+    }
+
+    .dk .kh>span:first-child {
+      color: #6b21a8;
+      font-weight: 700;
+    }
+
+    .dk #kpiArbitrationState {
+      color: #4c1d95 !important;
+    }
+
+    .dk #kpiArbitrationDesc {
+      color: #6b21a8 !important;
+    }
+
+    .dk .kf {
+      display: flex;
+      justify-content: space-between;
+      font: 11px var(--mono);
+      color: #7c3aed;
+      border-top: 1px solid rgba(167, 139, 250, 0.2);
+      padding-top: 8px;
+      margin-top: auto;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #10b981;
+      color: #10b981;
+      animation: ping 1.8s infinite;
+    }
+
+    .dot.warn {
+      background: #f59e0b;
+      color: #f59e0b;
+    }
+
+    .dot.bad {
+      background: #ef4444;
+      color: #ef4444;
+    }
+
+    @keyframes ping {
+      0% {
+        box-shadow: 0 0 0 0 currentColor;
+      }
+
+      70%,
+      100% {
+        box-shadow: 0 0 0 8px transparent;
+      }
+    }
+
+    /* Grid Layout & Left Control Rack */
+    .grid {
+      display: grid;
+      grid-template-columns: 340px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .rack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 14px 14px 14px 26px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border-radius: 20px;
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
+      position: relative;
+    }
+
+    .rack:before {
+      content: '';
+      position: absolute;
+      left: 10px;
+      top: 18px;
+      bottom: 18px;
+      width: 6px;
+      background: radial-gradient(circle, rgba(0, 0, 0, 0.12) 1.5px, transparent 2px) 0 0/6px 24px;
+    }
+
+    .pre {
+      background: rgba(248, 250, 252, 0.75);
+      border-radius: 14px;
+      padding: 13px;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .pre h2 {
+      font: 700 12px var(--mono);
+      color: var(--tx-dim);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      padding-bottom: 8px;
+    }
+
+    .pre h2 span {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    /* Preset Buttons: Capsule Pill Styling */
+    /* Preset Buttons: Google Minimalist Clean Structured Cards */
+    .pb {
+      font: 500 12px var(--mono);
+      text-align: left;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      background: rgba(255, 255, 255, 0.7);
+      color: var(--tx-dim);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font: 500 12px/1.35 var(--mono);
+      text-align: left;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.07);
+      background: rgba(255, 255, 255, 0.75);
+      color: var(--tx);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all .2s cubic-bezier(.4, 0, .2, 1);
+      backdrop-filter: blur(8px);
+      backdrop-filter: blur(12px);
+      width: 100%;
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    .pb:hover {
+      background: #ffffff;
+      border-color: rgba(99, 102, 241, 0.25);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+      border-color: rgba(99, 102, 241, 0.3);
+      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.06);
+      transform: translateY(-1px);
+    }
+
+    .pb-title {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .pb-badge {
+      flex: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      font: 700 10.5px var(--mono);
+    }
+
+    .pb .ic {
+      color: #10b981;
+    }
+
+    .pb.on {
+      background: #ffffff;
+      border-color: #6366f1;
+      color: #1e1b4b;
+      font-weight: 600;
+      box-shadow: 0 3px 12px rgba(99, 102, 241, 0.12), inset 0 0 0 1px #6366f1;
+    }
+
+    .pb.on.w {
+      border-color: #f59e0b;
+      box-shadow: 0 3px 12px rgba(245, 158, 11, 0.15), inset 0 0 0 1px #f59e0b;
+    }
+
+    .pb.on.e {
+      border-color: #ef4444;
+      box-shadow: 0 3px 12px rgba(239, 68, 68, 0.15), inset 0 0 0 1px #ef4444;
+    }
+
+    .pb.on.warn {
+      border-color: #f59e0b;
+      box-shadow: 0 3px 12px rgba(245, 158, 11, 0.15), inset 0 0 0 1px #f59e0b;
+      color: #78350f;
+    }
+
+    .pb.on.err {
+      border-color: #ef4444;
+      box-shadow: 0 3px 12px rgba(239, 68, 68, 0.15), inset 0 0 0 1px #ef4444;
+      color: #7f1d1d;
+    }
+
+    .unit {
+      --c: var(--b);
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
+      transition: opacity .2s, border-color .2s;
+    }
+
+    .unit:hover {
+      border-color: rgba(0, 0, 0, 0.12);
+    }
+
+    .uh {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: rgba(248, 250, 252, 0.9);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      color: var(--tx);
+    }
+
+    .uh b {
+      font: 700 12.5px var(--mono);
+      color: var(--c);
+    }
+
+    .uh span {
+      font: 500 11px var(--mono);
+      color: var(--mu);
+      flex: 1;
+    }
+
+    .st {
+      font: 700 10px var(--mono);
+      font-style: normal;
+      background: rgba(0, 0, 0, 0.05);
+      color: var(--tx-dim);
+      padding: 2px 10px;
+      border-radius: 999px;
+    }
+
+    .ub {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+
+    .ub h3 {
+      font-size: 13.5px;
+      font-weight: 600;
+      line-height: 1.3;
+      color: var(--tx);
+    }
+
+    .ub p {
+      font-size: 12px;
+      color: var(--tx-dim);
+    }
+
+    .unit.off {
+      filter: grayscale(.85);
+      opacity: .6;
+    }
+
+    .unit.off .uh {
+      background: rgba(241, 245, 249, 0.8);
+    }
+
+    code,
+    .cd {
+      font: 500 11px var(--mono);
+      background: rgba(0, 0, 0, 0.04);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      padding: 1px 6px;
+      border-radius: 6px;
+      color: var(--tx-dim);
+    }
+
+    .rw {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font: 12px var(--mono);
+      color: var(--tx-dim);
+    }
+
+    .vp {
+      font: 700 11px var(--mono);
+      color: var(--c);
+      background: color-mix(in srgb, var(--c) 12%, #ffffff);
+      border: 1px solid color-mix(in srgb, var(--c) 30%, transparent);
+      border-radius: 999px;
+      padding: 2px 10px;
+      white-space: nowrap;
+    }
+
+    .opt {
+      border-top: 1px solid rgba(0, 0, 0, 0.05);
+      padding-top: 10px;
+      color: var(--tx-dim);
+      cursor: pointer;
+    }
+
+    .opt {
+      border-top: 1px solid rgba(0, 0, 0, 0.05);
+      padding-top: 10px;
+      color: var(--tx-dim);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .opt:hover {
+      color: var(--tx);
+    }
+
+    /* ---------------------------------------------------------------------------
+   GOOGLE MATERIAL 3 CAPSULE TOGGLE SWITCHES (FROSTED MODERN GLASSY)
+--------------------------------------------------------------------------- */
+    .sw {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+      flex: none;
+      border-radius: 999px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .sw input {
+      position: absolute;
+      opacity: 0;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+      margin: 0;
+      z-index: 2;
+    }
+
+    .sw i {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.10);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      position: relative;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+      pointer-events: none;
+    }
+
+    .sw i:after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #ffffff;
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .sw input:checked+i {
+      background: var(--c, #7c3aed);
+      border-color: transparent;
+      box-shadow: 0 2px 8px color-mix(in srgb, var(--c, #7c3aed) 35%, transparent);
+    }
+
+    .sw input:checked+i:after {
+      transform: translateX(20px);
+    }
+
+    .uh .sw i {
+      background: rgba(0, 0, 0, 0.12);
+    }
+
+    .uh .sw input:checked+i {
+      background: var(--c, #7c3aed);
+    }
+
+    /* Google-Style Range Sliders */
+    input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      outline: 0;
+      cursor: pointer;
+      margin-top: 6px;
+      background: linear-gradient(var(--c), var(--c)) 0 / var(--p, 50%) 100% no-repeat, rgba(0, 0, 0, 0.08);
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 2.5px solid var(--c);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      transition: transform 0.15s;
+    }
+
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    input[type=range]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 2.5px solid var(--c);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Views & Cards */
+    .vw {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .view {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .card {
+      --c: var(--b);
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      padding: 18px;
+      min-width: 0;
+      box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+    }
+
+    .ch {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 8px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      padding-bottom: 11px;
+      margin-bottom: 14px;
+    }
+
+    .ey {
+      display: block;
+      font: 600 11px var(--mono);
+      color: var(--c);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .card h2 {
+      font-size: 19px;
+      font-weight: 600;
+      color: var(--tx);
+    }
+
+    .card h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--tx);
+    }
+
+    .card h4 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--tx);
+    }
+
+    .nt {
+      font-size: 12px;
+      color: var(--tx-dim);
+      margin: 4px 0 12px;
+      line-height: 1.5;
+    }
+
+    .g2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .g3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    /* Canvas Viewports */
+    .cv {
+      position: relative;
+      height: 180px;
+      background: rgba(248, 250, 252, 0.9);
+      border: 1px solid rgba(0, 0, 0, 0.07);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.03);
+    }
+
+    .cv canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* High-Contrast Aerospace CAD Viewport for Toolpath */
+    .cv.dk {
+      background: #0f172a;
+      border-color: rgba(0, 0, 0, 0.1);
+    }
+
+    .lg {
+      font: 11px var(--mono);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      color: var(--tx-dim);
+      flex-wrap: wrap;
+    }
+
+    .lg i {
+      display: inline-block;
+      width: 10px;
+      height: 3px;
+      border-radius: 999px;
+      margin-right: 5px;
+      vertical-align: middle;
+      background: var(--c);
+    }
+
+    .sch {
+      border: 0;
+      margin: 0 0 10px;
+      padding: 0;
+    }
+
+    .tp {
+      display: grid;
+      grid-template-columns: 7fr 5fr;
+      gap: 16px;
+    }
+
+    .tp .cv {
+      height: 260px;
+    }
+
+    .ov {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      font: 500 11px var(--mono);
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #e2e8f0;
+      padding: 4px 10px;
+      border-radius: 999px;
+      backdrop-filter: blur(8px);
+    }
+
+    .ov.b {
+      top: auto;
+      bottom: 10px;
+      right: 10px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.92);
+      border-color: rgba(0, 0, 0, 0.08);
+      color: var(--tx);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Block Diagram & Signal Table */
+    .bd {
+      background: rgba(255, 255, 255, 0.7);
+      background-image: linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+      background-size: 24px 24px;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-x: auto;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    .tier {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 1060px;
+    }
+
+    .node {
+      background: rgba(255, 255, 255, 0.92);
+      border: 1.5px solid var(--c);
+      border-radius: 12px;
+      padding: 9px 13px;
+      min-width: 154px;
+      transition: all .2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    }
+
+    .node[data-k] {
+      cursor: pointer;
+    }
+
+    .node[data-k]:hover {
+      box-shadow: 0 4px 16px color-mix(in srgb, var(--c) 25%, transparent);
+      transform: translateY(-2px);
+    }
+
+    .node.sel {
+      box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--c), 0 4px 16px color-mix(in srgb, var(--c) 30%, transparent);
+    }
+
+    .node b {
+      display: block;
+      font: 700 11.5px var(--mono);
+      color: var(--tx);
+    }
+
+    .node small {
+      display: block;
+      font-size: 11px;
+      color: var(--mu);
+    }
+
+    .node em {
+      display: block;
+      font: 700 11.5px var(--mono);
+      font-style: normal;
+      color: var(--c);
+      margin-top: 3px;
+    }
+
+    .node.core {
+      flex: 1;
+      background: linear-gradient(135deg, color-mix(in srgb, var(--c) 10%, #ffffff), rgba(255, 255, 255, 0.95));
+      border: 1.5px solid var(--c);
+      color: var(--tx);
+      box-shadow: 0 2px 10px color-mix(in srgb, var(--c) 15%, transparent);
+    }
+
+    .core .top {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font: 500 11px var(--mono);
+    }
+
+    .core strong {
+      display: block;
+      font-size: 13.5px;
+      margin: 3px 0;
+      color: var(--tx);
+    }
+
+    .core em {
+      color: var(--c);
+      font-weight: 600;
+    }
+
+    .bdg {
+      background: color-mix(in srgb, var(--c) 18%, #ffffff);
+      color: var(--c);
+      padding: 2px 8px;
+      border-radius: 999px;
+      font: 700 10px var(--mono);
+      border: 1px solid color-mix(in srgb, var(--c) 30%, transparent);
+    }
+
+    .bdg.off {
+      background: #fee2e2;
+      color: #b91c1c;
+      border-color: #fecaca;
+    }
+
+    .sig {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1.5px solid var(--c);
+      background: #ffffff;
+      display: grid;
+      place-items: center;
+      font: 700 13px var(--mono);
+      color: var(--c);
+      flex: none;
+      box-shadow: 0 2px 8px color-mix(in srgb, var(--c) 15%, transparent);
+    }
+
+    .w {
+      width: 30px;
+      height: 12px;
+      flex: none;
+      overflow: visible;
+    }
+
+    .w path:first-child {
+      stroke: var(--c);
+      stroke-width: 2;
+      fill: none;
+      stroke-dasharray: 6 6;
+      animation: flow .7s linear infinite;
+    }
+
+    .w path+path {
+      fill: var(--c);
+    }
+
+    .w.fb {
+      transform: scaleX(-1);
+    }
+
+    .w.fb path:first-child {
+      stroke: #94a3b8;
+      animation: none;
+      stroke-dasharray: 4 3;
+    }
+
+    .w.fb path+path {
+      fill: #94a3b8;
+    }
+
+    .bd-wire {
+      width: 30px;
+      height: 12px;
+      flex: none;
+      overflow: visible;
+    }
+
+    .bd-wire path:first-child {
+      stroke: var(--c);
+      stroke-width: 2;
+      fill: none;
+      stroke-dasharray: 6 6;
+      animation: flow .7s linear infinite;
+    }
+
+    .bd-wire path+path {
+      fill: var(--c);
+    }
+
+    .bd-wire.fb {
+      transform: scaleX(-1);
+    }
+
+    .bd-wire.fb path:first-child {
+      stroke: #94a3b8;
+      animation: none;
+      stroke-dasharray: 4 3;
+    }
+
+    .bd-wire.fb path+path {
+      fill: #94a3b8;
+    }
+
+    @keyframes flow {
+      to {
+        stroke-dashoffset: -24;
+      }
+    }
+
+    .cp {
+      font: 600 11.5px var(--mono);
+      text-align: center;
+      padding: 7px 12px;
+      border: 1px dashed rgba(0, 0, 0, 0.12);
+      border-radius: 999px;
+      background: rgba(248, 250, 252, 0.8);
+      min-width: 1060px;
+      color: var(--tx-dim);
+    }
+
+    .insp {
+      margin-top: 14px;
+      background: rgba(255, 255, 255, 0.88);
+      color: var(--tx);
+      border-radius: 14px;
+      border: 1px solid rgba(0, 0, 0, 0.07);
+      font: 13px/1.6 var(--mono);
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+
+    .insp .tb {
+      background: rgba(248, 250, 252, 0.9);
+      padding: 9px 16px;
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      color: var(--mu);
+      font-size: 11px;
+    }
+
+    .insp .tb i {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #cbd5e1;
+    }
+
+    .insp .tb span {
+      margin-left: 6px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      font-weight: 600;
+    }
+
+    .ib {
+      padding: 14px 16px;
+    }
+
+    #inspTitle {
+      font-weight: 700;
+      font-size: 12.5px;
+    }
+
+    #inspEquation {
+      margin: 10px 0 12px;
+      font-size: 15px;
+      color: var(--tx);
+      background: rgba(248, 250, 252, 0.9);
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      display: flex;
+      align-items: center;
+      overflow-x: auto;
+    }
+
+    .ib .rw {
+      font-size: 12px;
+      color: var(--mu);
+      flex-wrap: wrap;
+    }
+
+    #inspLatency {
+      color: #059669;
+      font-weight: 600;
+    }
+
+    /* Table Styling */
+    .tbl {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+    }
+
+    .tbl th {
+      background: rgba(241, 245, 249, 0.9);
+      color: var(--tx-dim);
+      font: 600 11px var(--mono);
+      text-align: left;
+      padding: 11px 14px;
+      white-space: nowrap;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .tbl td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+      color: #1e293b;
+    }
+
+    .tbl tr:hover td {
+      background: rgba(241, 245, 249, 0.5);
+    }
+
+    .tbl .s {
+      font: 700 12px var(--mono);
+    }
+
+    .tbl .u {
+      font: 11.5px var(--mono);
+      color: var(--mu);
+    }
+
+    .tbl .l {
+      font: 700 12.5px var(--mono);
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    /* Stability & Benchmark */
+    .kvp {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .kvp>div {
+      background: rgba(248, 250, 252, 0.8);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: 600 12px var(--mono);
+    }
+
+    .kvp small {
+      display: block;
+      font: 500 10px var(--mono);
+      color: var(--mu);
+      margin-bottom: 2px;
+    }
+
+    .tb2 {
+      margin-bottom: 16px;
+    }
+
+    .tb2 .rw {
+      margin-bottom: 6px;
+    }
+
+    .tl {
+      display: grid;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.04);
+      padding: 9px;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .tl i {
+      height: 18px;
+      background: var(--c);
+      border-radius: 6px;
+    }
+
+    .bm {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 14px;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .bm:last-child {
+      border: 0;
+    }
+
+    .bm b {
+      color: var(--tx);
+      font-size: 13.5px;
+    }
+
+    .br {
+      display: grid;
+      grid-template-columns: minmax(120px, 55%) 1fr;
+      gap: 12px;
+      align-items: center;
+      margin: 5px 0;
+      font: 12px var(--mono);
+    }
+
+    .tk {
+      height: 20px;
+      background: rgba(0, 0, 0, 0.06);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .tk i {
+      display: block;
+      height: 100%;
+      background: #94a3b8;
+      border-radius: 999px;
+    }
+
+    /* Mathematical Formulation Cards */
+    .eqc {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .math-card-box {
+      background: rgba(248, 250, 252, 0.9);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin: 10px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 56px;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+      overflow-x: auto;
+    }
+
+    .katex {
+      font-size: 1.15em !important;
+      color: var(--tx) !important;
+    }
+
+    .katex-display {
+      margin: 0 !important;
+    }
+
+    .tex-fallback {
+      font-family: 'Cambria Math', 'Times New Roman', serif;
+      font-size: 14px;
+      letter-spacing: 0.03em;
+      color: var(--tx);
+      font-style: italic;
+    }
+
+    /* Footer */
+    .ft {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+      color: var(--mu);
+      font: 11.5px var(--mono);
+      padding: 14px 24px;
+      margin-top: 16px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .ft>div {
+      max-width: 1640px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 20px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .ft .cred {
+      padding: 3px 12px 3px 5px;
+    }
+
+    .ft .cred .mf {
+      width: 24px;
+      height: 24px;
+      font-size: 10px;
+    }
+
+    .ft .cred b {
+      font-size: 13px;
+      color: var(--tx);
+    }
+
+    .ft .cred small {
+      font-size: 9.5px;
+    }
+
+    @media(max-width: 1280px) {
+      .kpis {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media(max-width: 1100px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .g3,
+      .tp {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media(max-width: 760px) {
+
+      .g2,
+      .bm,
+      .kpis {
+        grid-template-columns: 1fr;
+      }
+
+      .row1,
+      .row2,
+      .main {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+    }
+
+    @media(prefers-reduced-motion: reduce) {
+      * {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Ambient background mesh gradients & animated interactive halftone dot-matrix -->
+  <div class="glow-bg" aria-hidden="true">
+    <div class="glow-orb orb-purple"></div>
+    <div class="glow-orb orb-blue"></div>
+    <div class="glow-orb orb-cyan"></div>
+  </div>
+  <canvas id="bgDotCanvas" class="bg-dots" aria-hidden="true"></canvas>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-wave" viewBox="0 0 24 24">
+        <path d="M2 12h3V6h4v12h4V6h4v6h5" />
+      </symbol>
+      <symbol id="i-diag" viewBox="0 0 24 24">
+        <rect x="3" y="3" width="6" height="6" rx="1" />
+        <rect x="15" y="3" width="6" height="6" rx="1" />
+        <rect x="9" y="15" width="6" height="6" rx="1" />
+        <path d="M6 9v3h12V9M12 12v3" />
+      </symbol>
+      <symbol id="i-target" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" />
+        <circle cx="12" cy="12" r="4.5" />
+        <circle cx="12" cy="12" r=".6" />
+      </symbol>
+      <symbol id="i-bars" viewBox="0 0 24 24">
+        <path d="M5 20V10M12 20V4M19 20v-7" />
+      </symbol>
+      <symbol id="i-bolt" viewBox="0 0 24 24">
+        <path d="M13 2 4 14h7l-1 8 9-12h-7z" />
+      </symbol>
+      <symbol id="i-burst" viewBox="0 0 24 24">
+        <path d="M12 2v5M12 17v5M2 12h5M17 12h5M5 5l3.5 3.5M15.5 15.5 19 19M19 5l-3.5 3.5M8.5 15.5 5 19" />
+      </symbol>
+      <symbol id="i-warn" viewBox="0 0 24 24">
+        <path d="M12 3 2 20h20zM12 10v4M12 17v.5" />
+      </symbol>
+      <symbol id="i-pause" viewBox="0 0 24 24">
+        <path d="M8 5v14M16 5v14" />
+      </symbol>
+      <symbol id="i-play" viewBox="0 0 24 24">
+        <path d="M7 4v16l13-8z" />
+      </symbol>
+      <symbol id="i-reset" viewBox="0 0 24 24">
+        <path d="M4 12a8 8 0 1 0 3-6.2M4 4v5h5" />
+      </symbol>
+      <symbol id="i-sliders" viewBox="0 0 24 24">
+        <path d="M4 7h8M18 7h2M4 17h2M12 17h8" />
+        <circle cx="15" cy="7" r="2" />
+        <circle cx="9" cy="17" r="2" />
+      </symbol>
+      <symbol id="i-check" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" />
+        <path d="m8 12 3 3 5-6" />
+      </symbol>
+    </defs>
+  </svg>
+
+  <header class="hdr">
+    <div class="row1">
+      <div class="brand"><i></i>
+        <div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="eyb">Digital Control Systems
+              • Real-Time HIL Simulator</span><span class="chip">Controllers #28 • #41 • #44</span></div>
+          <h1>Integrated Digital Control for Aerospace CNC Machining</h1>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+        <div class="cred"><span class="mf">M</span><span><small>Lead Researcher &amp; Control Systems
+              Designer</small><b>Mohammed Firas</b></span></div>
+        <div class="ctl">
+          <button id="btnPlayPause" class="btn run" onclick="toggleSimulation()"><span id="iconPlayPause"><svg
+                class="ic">
+                <use href="#i-pause" />
+              </svg></span><span id="txtPlayPause">RUNNING</span></button>
+          <button class="btn" onclick="resetSimulation()" title="Reset Digital Integrators &amp; State Vectors"><svg
+              class="ic">
+              <use href="#i-reset" />
+            </svg>RESET</button>
+        </div>
+      </div>
+    </div>
+    <div class="bar2">
+      <div class="row2">
+        <nav class="seg" role="tablist">
+          <button role="tab" id="tabBtn-telemetry" class="tab-btn-active" onclick="switchTab('telemetry')"><svg
+              class="ic" style="color:#d97706">
+              <use href="#i-wave" />
+            </svg>01 / LIVE MULTI-RATE TELEMETRY &amp; CNC TOOLPATH</button>
+          <button role="tab" id="tabBtn-blockdiagram" onclick="switchTab('blockdiagram')"><svg class="ic"
+              style="color:#2563eb">
+              <use href="#i-diag" />
+            </svg>02 / INTERACTIVE BLOCK DIAGRAM &amp; SIGNAL TABLE</button>
+          <button role="tab" id="tabBtn-stability" onclick="switchTab('stability')"><svg class="ic"
+              style="color:#10b981">
+              <use href="#i-target" />
+            </svg>03 / Z-PLANE STABILITY, LOBES &amp; HARDWARE TIMING</button>
+          <button role="tab" id="tabBtn-comparison" onclick="switchTab('comparison')"><svg class="ic"
+              style="color:#7c3aed">
+              <use href="#i-bars" />
+            </svg>04 / BENCHMARK &amp; EQUATION SYNTHESIS</button>
+        </nav>
+        <div class="trgs"><span>Test disturbances:</span>
+          <button id="trgSpike" class="trg" style="--c:#2563eb" onclick="triggerImmersionSpike()"><svg class="ic">
+              <use href="#i-bolt" />
+            </svg>+300% Corner Force Spike</button>
+          <button id="trgChatter" class="trg" style="--c:#d97706" onclick="triggerChatterBurst()"><svg class="ic">
+              <use href="#i-burst" />
+            </svg>850 Hz Chatter Burst</button>
+          <button id="trgPiezo" class="trg" style="--c:#ef4444" onclick="triggerPiezoOverload()"><svg class="ic">
+              <use href="#i-warn" />
+            </svg>Priority Override Fault (&gt;145V)</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="kpis" id="kpis"></section>
+    <div class="grid">
+      <aside class="rack" id="rack"></aside>
+      <section class="vw">
+
+        <div id="tabView-telemetry" class="view">
+          <div class="g2" id="scopes"></div>
+          <div class="card">
+            <div class="ch">
+              <div><span class="ey">Geometric toolpath &amp; polar micro-deflection orbit</span>
+                <h3>Monolithic Ti-6Al-4V Aerospace Rib Pocket Milling &amp; Real-Time Tool-Tip Orbit</h3>
+              </div>
+              <div class="lg" style="gap:16px"><span>Position X_t: <b id="lblPosX" style="color:var(--g)">42.180
+                    mm</b></span><span>Position Y_t: <b id="lblPosY" style="color:var(--g)">18.405
+                    mm</b></span><span>Effective Feed: <b id="lblEffFeed" style="color:var(--b)">360 mm/min</b></span>
+              </div>
+            </div>
+            <div class="tp">
+              <div class="cv dk"><canvas id="canvasToolpath"></canvas>
+                <div class="ov"><span style="color:#34d399">●</span> NC Toolpath Reference X_ref(k) &nbsp;|&nbsp; <span
+                    style="color:#f59e0b">●</span> Corner 300% Radial Immersion Zone</div>
+              </div>
+              <div class="cv"><canvas id="canvasPolarOrbit"></canvas>
+                <div class="ov b"><span>Green Ring: <b>±2.5 μm Tolerance</b></span><span>Live Orbit: <b
+                      id="lblOrbitRadius">1.78 μm</b></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tabView-blockdiagram" class="view hidden">
+          <div class="card">
+            <div class="ch">
+              <div><span class="ey">05 / System-specific control architecture (interactive telemetry)</span>
+                <h2>Integrated Three-Controller System Block Diagram</h2>
+              </div><span class="chip2">Click any controller block below to inspect its live difference equation</span>
+            </div>
+            <div class="bd" id="bd"></div>
+            <div class="insp" id="blockInspectorBox">
+              <div class="tb"><i></i><i></i><i></i><span>difference-equation inspector</span></div>
+              <div class="ib">
+                <div id="inspTitle"></div>
+                <div id="inspEquation"></div>
+                <div class="rw"><span id="inspHardware"></span><span id="inspLatency"></span></div>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="overflow-x:auto">
+            <div class="ch">
+              <div><span class="ey">06 / Signal interface specification</span>
+                <h3>System Signal Table &amp; Live Inter-Controller Variables</h3>
+              </div>
+            </div>
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>Signal</th>
+                  <th>Source</th>
+                  <th>Destination</th>
+                  <th>Type &amp; Sampling Rate</th>
+                  <th>Engineering Units &amp; Range</th>
+                  <th style="text-align:right">Live Telemetry</th>
+                </tr>
+              </thead>
+              <tbody id="sigBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="tabView-stability" class="view hidden">
+          <div class="g2">
+            <div class="card"><span class="ey">10 / Discrete-time stability &amp; robustness</span>
+              <h3>Interactive Z-Plane Pole Migration (|z| &lt; 1)</h3>
+              <p class="nt">Adjust the <b>#41 Active Damping Slider</b> on the left to observe real-time pole migration
+                from the unit circle boundary (<code style="color:#ef4444">|z|=0.994</code>) inward to <code
+                  style="color:#10b981">|z|=0.842</code>.</p>
+              <div class="cv" style="height:260px"><canvas id="canvasZPlane"></canvas></div>
+              <div class="kvp">
+                <div><small>LOOP #41 POLE RADIUS</small><span id="lblPole41" style="color:var(--a)">|z_41| = 0.842
+                    (Stable)</span></div>
+                <div><small>LOOP #44 &amp; #28 POLES</small><span style="color:var(--g)">|z_44|=0.881 |
+                    z_28=0.820</span></div>
+              </div>
+            </div>
+            <div class="card" style="--c:var(--a)"><span class="ey">Regenerative chatter boundary expansion</span>
+              <h3>Stability Lobe Diagram: Axial Depth b_lim vs Spindle RPM</h3>
+              <p class="nt">Active damping (#41) + force regulation (#28) raises stable axial depth-of-cut <b>2.4×</b>
+                across all spindle speeds.</p>
+              <div class="cv" style="height:260px"><canvas id="canvasStabilityLobes"></canvas></div>
+              <div class="kvp">
+                <div><small>CURRENT DEPTH (b)</small><span id="lblCurrentDepthSLD">b = 3.50 mm @ 8,500 RPM</span></div>
+                <div><small>STABILITY VERDICT</small><span id="lblSLDVerdict" style="color:var(--g)">STABLE (Below
+                    Active Lobe)</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="ch">
+              <div><span class="ey">03 &amp; 04 / Multi-rate scheduling &amp; embedded hardware chain</span>
+                <h3>1.0 ms Major Frame Execution Timing &amp; Tenfold Bandwidth Separation</h3>
+              </div><span class="chip2">τ_d = 35 μs (#41) • 125 μs (#44) • 450 μs (#28)</span>
+            </div>
+            <div id="timing"></div>
+          </div>
+        </div>
+
+        <div id="tabView-comparison" class="view hidden">
+          <div class="card">
+            <div class="ch">
+              <div><span class="ey">11 / System evaluation &amp; practical effectiveness</span>
+                <h3>Performance Benchmark: Single-Loop CNC (#44 Only) vs. Integrated Triplet (#28+#41+#44)</h3>
+              </div><span class="chip2">2.4× Deeper Stable Cut | +65% Tool Life</span>
+            </div>
+            <div id="bench"></div>
+          </div>
+          <div class="g3" id="eqs"></div>
+        </div>
+
+      </section>
+    </div>
+  </main>
+
+  <footer class="ft">
+    <div>
+      <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><span>Digital Control Systems Research
+          Simulation</span><span class="cred"><span class="mf">M</span><span><small>Prepared by</small><b>Mohammed Firas</b></span></span><span class="chip2" style="font-size:11px;font-weight:600">Supervised by: Asst. Lec. Huda Ali</span><span class="chip2" style="font-size:11px;font-weight:600">Dept. of Computer Engineering • 4th Stage (B)</span></div>
+      <span>Controllers: #28 Cutting Forces (1 kHz) • #44 NC Position (4 kHz) • #41 Active Vibration Absorber (10
+        kHz)</span>
+    </div>
+  </footer>
+
+  <script>
+    // ---------------------------------------------------------------------------
+    // 0. KA-TEX & MATHEMATICAL TYPESETTING ENGINE
+    // ---------------------------------------------------------------------------
+    function renderTex(tex, display = true) {
+      if (window.katex && typeof window.katex.renderToString === 'function') {
+        try {
+          return katex.renderToString(tex, { throwOnError: false, displayMode: display });
+        } catch (e) {
+          console.warn("KaTeX render error:", e);
+        }
+      }
+      return `<span class="tex-fallback" data-tex="${tex.replace(/"/g, '&quot;')}" data-disp="${display}">${tex}</span>`;
+    }
+
+    function refreshMathElements() {
+      if (!window.katex) return;
+      document.querySelectorAll('.tex-fallback[data-tex]').forEach(el => {
+        const tex = el.getAttribute('data-tex');
+        const isDisp = el.getAttribute('data-disp') !== 'false';
+        try {
+          el.outerHTML = katex.renderToString(tex, { throwOnError: false, displayMode: isDisp });
+        } catch (e) { }
+      });
+    }
+
+    // ---------------------------------------------------------------------------
+    // 1. ANIMATED HALFTONE DOT-MATRIX BACKGROUND (Matching User's Image 1)
+    // ---------------------------------------------------------------------------
+    const dotCanvas = document.getElementById('bgDotCanvas');
+    let dotCtx = null;
+    let dotW = 0, dotH = 0;
+    let mouseX = -9999, mouseY = -9999;
+    window.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+
+    function initDotCanvas() {
+      if (!dotCanvas) return;
+      dotCtx = dotCanvas.getContext('2d');
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      dotW = window.innerWidth;
+      dotH = window.innerHeight;
+      dotCanvas.width = dotW * dpr;
+      dotCanvas.height = dotH * dpr;
+      dotCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    window.addEventListener('resize', initDotCanvas);
+
+    function drawDotMatrix(time) {
+      if (!dotCtx) return;
+      dotCtx.clearRect(0, 0, dotW, dotH);
+      const spacing = 26;
+      const t = time * 0.0006;
+      const cols = Math.ceil(dotW / spacing);
+      const rows = Math.ceil(dotH / spacing);
+
+      for (let r = 0; r < rows; r++) {
+        const y = r * spacing + 13;
+        for (let c = 0; c < cols; c++) {
+          const x = c * spacing + 13;
+          const wave = Math.sin(x * 0.007 + y * 0.005 + t) * Math.cos(x * 0.005 - y * 0.006 + t * 0.6);
+          const dMouse = Math.hypot(x - mouseX, y - mouseY);
+          const mouseFactor = Math.max(0, 1 - dMouse / 170);
+
+          const normWave = (wave + 1) * 0.5;
+          const radius = 1.0 + normWave * 1.8 + mouseFactor * 1.5;
+          const alpha = 0.045 + normWave * 0.14 + mouseFactor * 0.32;
+
+          dotCtx.beginPath();
+          dotCtx.arc(x, y, radius, 0, 6.2832);
+          // Soft matte lavender/purple dots against matte off-white background
+          dotCtx.fillStyle = `rgba(124, 58, 237, ${alpha.toFixed(3)})`;
+          dotCtx.fill();
+
+          if (mouseFactor > 0.25) {
+            dotCtx.shadowColor = 'rgba(168, 85, 247, 0.35)';
+            dotCtx.shadowBlur = 6 * mouseFactor;
+            dotCtx.fillStyle = `rgba(109, 40, 217, ${(alpha * 1.25).toFixed(3)})`;
+            dotCtx.fill();
+            dotCtx.shadowBlur = 0;
+          }
+        }
+      }
+    }
+
+    // ---------------------------------------------------------------------------
+    // 2. UI BUILDERS (markup generated from compact data; all original IDs kept)
+    // ---------------------------------------------------------------------------
+    const $ = i => document.getElementById(i), T = (i, t) => { const e = $(i); if (e) e.textContent = t; };
+    const ic = n => '<svg class="ic"><use href="#i-' + n + '"/></svg>';
+
+    const kpi = (c, l, bid, bt, pc, vid, vt, sm, bar, w, sp, lim) => `<div class="kpi" style="--c:${c}"><div class="kh"><span>${l}</span><span id="${bid}" class="pill ${pc}">${bt}</span></div><div class="kv"><b id="${vid}">${vt}</b>${sm}</div><div class="bar"><i id="${bar}" style="width:${w}%"></i>${lim ? `<u style="left:${lim}%"></u>` : ''}</div><svg class="spk" viewBox="0 0 100 24" preserveAspectRatio="none"><polyline id="${sp}"/></svg></div>`;
+    $('kpis').innerHTML =
+      kpi('#10b981', '#44 Contour tracking error', 'badgeTolerance', 'PASS (≤2.5 μm)', 'ok', 'kpiContourError', '±1.80 μm', '<small>Lim: ±2.5 μm</small>', 'barContourError', 18, 'spkErr', 25) +
+      kpi('#2563eb', '#28 Cutting force F_cut(k)', 'badgeForce', 'α_f = 1.00', 'c', 'kpiCuttingForce', '450 N', '<small id="kpiForceRefLabel">Ref: 450 N</small>', 'barCuttingForce', 45, 'spkForce') +
+      kpi('#f59e0b', '#41 Surface roughness (R_a)', 'badgeRoughness', 'ζ_eff = 0.185', 'c', 'kpiRoughness', '0.42 μm', '<small>Max: 0.80 μm</small>', 'barRoughness', 22, 'spkRa', 40) +
+      `<div class="kpi" style="--c:#64748b"><div class="kh"><span>Actuator effort (u_p / u_x)</span><span id="badgeActuator" class="pill">LINEAR RANGE</span></div><div class="kv" style="justify-content:space-between;align-items:flex-start"><div><b id="kpiPiezoVolt" style="font-size:24px;color:#7c3aed">+42.5 V</b><small style="display:block;margin-top:3px">Piezo [-30,+150V]</small></div><div style="text-align:right"><b id="kpiServoCurr" style="font-size:20px;color:var(--g)">4.8 A</b><small style="display:block;margin-top:3px">PMSM q-axis</small></div></div><div class="bar"><i id="barPiezoVolt" style="width:35%;background:#7c3aed"></i></div><svg class="spk" viewBox="0 0 100 24" preserveAspectRatio="none"><polyline id="spkUp"/></svg></div>` +
+      `<div id="cardArbitration" class="kpi dk" style="--c:#7c3aed"><div class="kh"><span>Coordination arbitration</span><span class="dot" id="dotArbitration"></span></div><div><p id="kpiArbitrationState" style="font:700 15px/1.2 var(--mono)">COOPERATIVE SYNERGY</p><p id="kpiArbitrationDesc" style="font-size:12px;margin-top:4px">#28 Cascade → #44 | #28 FF → #41 Active</p></div><div class="kf"><span>Bus: 100Mbps EtherCAT</span><span>Jitter &lt; 1μs</span></div></div>`;
+
+    const sl = (id, vid, l, mn, mx, st, v, vt) => `<div><div class="rw"><span>${l}</span><span id="${vid}" class="vp">${vt}</span></div><input type="range" id="${id}" min="${mn}" max="${mx}" step="${st}" value="${v}" oninput="updateSliders()" aria-label="${l}"></div>`;
+    const op = (l, id) => `<label class="rw opt"><span>${l}</span><span class="sw"><input type="checkbox" id="${id}" checked onchange="updateControllerStates()"><i></i></span></label>`;
+    const uh = (n, r, id) => `<div class="uh"><b>CONTROLLER #${n}</b><span>${r}</span><em class="st">${id ? 'ACTIVE' : 'PRIMARY AXIS'}</em>${id ? `<label class="sw"><input type="checkbox" id="${id}" checked onchange="updateControllerStates()" aria-label="Enable loop #${n}"><i></i></label>` : ''}</div>`;
+    $('rack').innerHTML =
+      `<div class="pre"><h2><span>${ic('sliders')}ARCHITECTURE CONFIGURATION</span><span style="color:#64748b;font-weight:500">Ti-6Al-4V</span></h2>
+  <button id="preset-integrated" class="pb on" onclick="setSystemPreset('integrated')"><span class="pb-title">1. Integrated Triplet (#28+#44+#41)</span><span id="pbBadgeInt" class="pb-badge" style="color:#10b981">${ic('check')} Active</span></button>
+  <button id="preset-nochatter" class="pb" onclick="setSystemPreset('nochatter')"><span class="pb-title">2. Force + Servo Only (#41 OFF)</span><span id="pbBadgeNoC" class="pb-badge" style="color:#d97706">Chatter Risk</span></button>
+  <button id="preset-baseline" class="pb" onclick="setSystemPreset('baseline')"><span class="pb-title">3. Baseline Single-Loop (#44 Only)</span><span id="pbBadgeBase" class="pb-badge" style="color:#ef4444">±38 μm Error</span></button></div>` +
+      `<div class="unit" style="--c:#2563eb">${uh(28, '1.0 kHz / 1 ms', 'chkLoop28')}<div class="ub"><h3>Cutting forces during machining operation</h3><p>Discrete PI + Clamping Anti-Windup (<code>0.2 ≤ α_f ≤ 1.2</code>)</p>${sl('sliderFref', 'valFref', 'Target Force F_ref(k):', 250, 750, 10, 450, '450 N')}${op('Feedforward Schedule (#28→#41):', 'chkFF28to41')}</div></div>` +
+      `<div class="unit" style="--c:#10b981">${uh(44, '4.0 kHz / 0.25 ms', '')}<div class="ub"><h3>Position control system in NC machine</h3><p>Tustin Lead-Lag + Velocity FF (<code>PM = 54.2°, GM = 11.4 dB</code>)</p>${sl('sliderFeedrate', 'valFeedrate', 'Programmed Feedrate V_f0:', 120, 600, 20, 360, '360 mm/min')}${op('Velocity Feedforward (K_vff):', 'chkVelFF')}</div></div>` +
+      `<div class="unit" style="--c:#f59e0b">${uh(41, '10.0 kHz / 0.1 ms', 'chkLoop41')}<div class="ub"><h3>Active Vibration Absorber</h3><p>Pre-Warped Tustin PPF Filter at <code>ω_n = 850 Hz</code></p>${sl('sliderDamping', 'valDamping', 'Active Damping Target (ζ_active):', 0.018, 0.240, 0.005, 0.185, '0.185 (10.3×)')}${sl('sliderDepth', 'valDepth', 'Axial Depth of Cut (b):', 1.0, 6.0, 0.25, 3.5, '3.5 mm')}${op('Tustin 850Hz Pre-Warping:', 'chkPreWarp')}</div></div>`;
+
+    const SC = [
+      ['canvasScopeForce', '#2563eb', 'Outer loop #28 • T_s1 = 1.0 ms (1 kHz)', 'Cutting Force F_cut(k) [N] & Override α_f(k)', [['#2563eb', 'F_cut'], ['#60a5fa', 'F_ref']]],
+      ['canvasScopeError', '#10b981', 'Middle loop #44 • T_s2 = 0.25 ms (4 kHz)', 'Contour Tracking Error e_x(k) [μm] vs ±2.5 μm Limit', [['#10b981', 'e_x(k)'], ['#ef4444', '±2.5μm']]],
+      ['canvasScopeVibration', '#d97706', 'Inner loop #41 • T_s3 = 0.1 ms (10 kHz FPGA)', '850 Hz Regenerative Chatter Displacement x_v(t) [μm]', [['#d97706', 'x_v(t)'], ['#64748b', 'f_n=850Hz']]],
+      ['canvasScopeEffort', '#7c3aed', 'Actuator commands &amp; saturation guard', 'Piezo Stack Voltage u_p(k) [V] &amp; PMSM Current u_x(k) [A]', [['#7c3aed', 'u_p [V]'], ['#10b981', 'u_x [A]']]]
+    ];
+    $('scopes').innerHTML = SC.map(s => `<div class="card" style="--c:${s[1]}"><div class="ch sch"><div><span class="ey">${s[2]}</span><h4>${s[3]}</h4></div><div class="lg">${s[4].map(l => `<span style="--c:${l[0]}"><i></i>${l[1]}</span>`).join('')}</div></div><div class="cv"><canvas id="${s[0]}"></canvas></div></div>`).join('');
+
+    const wire = fb => `<svg class="bd-wire${fb ? ' fb' : ''}" viewBox="0 0 30 12"><path d="M0 6H22"/><path d="M22 1l7 5-7 5z"/></svg>`;
+    const nd = (t, s, id, v, k) => `<div class="node"${k ? ` data-k="${k}" onclick="inspectBlock('${k}')"` : ''}><b>${t}</b>${s ? `<small>${s}</small>` : ''}<em${id ? ` id="${id}"` : ''}>${v}</em></div>`;
+    const TI = [
+      ['#2563eb', '28', 'Σ1', ['Ref: F_ref(k)', 'Target Force [N]', 'bdValFref', '450.0 N'], ['CONTROLLER #28 (1 kHz PI + Anti-Windup)', 'Cutting forces during machining operation', 'bdValEforce', 'e_F(k) = +0.0 N → α_f(k) = 1.00', 'bdBadge28'], ['Coupling Outputs:', '', 'bdValCoupling', 'α_f=1.00 → #44 | K_ff=1.00 → #41'], ['Kistler Dynamometer', 'Feedback: F_cut(k) [N]', 'bdValFcut', '450.2 N (1 kHz ADC)']],
+      ['#10b981', '44', 'Σ2', ['Ref: X_ref(k)', 'NC Toolpath [mm]', 'bdValXref', 'V_f = 360 mm/m'], ['CONTROLLER #44 (4 kHz Lead-Lag + P-PI)', 'Position control system in NC machine', 'bdValEpos', 'e_x(k) = 1.75 μm → u_x(k) = 4.8 A', ''], ['PMSM + Ball Screw', 'Output: Table Pos x_t(t)', '', 'J_e=0.012, B_e=0.08'], ['Optical Scale (5 nm)', 'Feedback: x_m(k) [mm]', '', 'EnDat 2.2 (4 kHz)']],
+      ['#f59e0b', '41', 'Σ3', ['Ref: a_ref = 0', 'Zero Chatter [m/s²]', '', 'Target: 0.0 m/s²'], ['CONTROLLER #41 (10 kHz Resonant H∞ / PPF)', 'Active Vibration Absorber', 'bdValEvib', 'a_sp(k) → u_p(k) = +42.5 V (ζ = 0.185)', 'bdBadge41'], ['Piezo + Ti-6Al-4V Plant', 'Output: Tool Tip Pos Z_tip', '', 'ω_n=2π(850), m_t=0.45kg'], ['IEPE Accelerometer', 'Feedback: a_sp(k) [m/s²]', 'bdValAcc', '12.4 m/s² (10 kHz)']]
+    ];
+    const tier = t => { const k = t[1], c = t[4]; return `<div class="tier" style="--c:${t[0]}">${nd(...t[3], k)}${wire()}<div class="sig">${t[2]}</div>${wire()}<div class="node core" data-k="${k}" onclick="inspectBlock('${k}')"><div class="top"><span>${c[0]}</span><span class="bdg"${c[4] ? ` id="${c[4]}"` : ''}>ACTIVE</span></div><strong>${c[1]}</strong><em id="${c[2]}">${c[3]}</em></div>${wire()}${nd(...t[5])}${wire(1)}${nd(...t[6])}</div>`; };
+    $('bd').innerHTML = tier(TI[0]) +
+      `<div class="cp" style="display:flex;justify-content:space-around;gap:16px"><span style="color:#2563eb">↓ Cascade Feedrate Scaling: α_f(k) scales X_ref(k) interpolation step</span><span style="color:#d97706">↓ Feedforward Gain Scheduling: K_ff(k) pre-loads Controller #41 piezo gain</span></div>` + tier(TI[1]) +
+      `<div class="cp">↓ Dynamic Chip Thickness: <b>h(t) = x_t(t) - x_v(t) + x_v(t - τ_spindle)</b> couples Servo Motion &amp; Regenerative Chatter</div>` + tier(TI[2]);
+
+    const SG = [
+  ['F_ref(k)', '#2563eb', 'CNC CAM Supervisory Planner', 'Summing Junction Σ1 (#28)', 'Discrete-time (1 kHz)', 'N (450 N nominal)', 'tblValFref', '450.0 N'],
+  ['F_cut(k)', '#2563eb', 'Kistler 9257B + 16-bit ADC', 'Controller #28 Feedback', 'Discrete-time (1 kHz)', 'N (0–2500 N)', 'tblValFcut', '450.2 N'],
+  ['α_f(k)', '#4338ca', '#28 Cutting forces controller', '#44 Position interpolator', 'Digital bus (EtherCAT)', 'Dimensionless (0.2–1.2)', 'tblValAlpha', '1.000'],
+  ['u_x(k)', '#10b981', '#44 Position control system', 'PMSM Current Driver', 'Discrete-time (4 kHz)', 'A (q-axis current)', 'tblValUx', '4.82 A'],
+  ['x_m(k)', '#10b981', 'Heidenhain Linear Scale', 'Summing Junction Σ2 (#44)', 'Digital EnDat 2.2 (4 kHz)', 'mm (±0.000005 mm)', 'tblValXm', '42.180 mm'],
+  ['u_p(k)', '#7c3aed', '#41 Active Vibration Absorber', 'Piezo High-Voltage Amplifier', 'Discrete-time (10 kHz DAC)', 'V (-30 V to +150 V)', 'tblValUp', '+42.5 V'],
+  ['a_sp(k)', '#d97706', 'Spindle IEPE Accelerometer', 'Summing Junction Σ3 (#41)', 'Discrete-time (10 kHz ADC)', 'm/s² (±500 m/s²)', 'tblValAcc', '12.4 m/s²']
+];
+$('sigBody').innerHTML = SG.map(r => `<tr><td class="s" style="color:${r[1]}">${r[0]}</td><td>${r[2]}</td><td>${r[3]}</td><td class="u">${r[4]}</td><td class="u">${r[5]}</td><td id="${r[6]}" class="l" style="color:${r[1]}">${r[7]}</td></tr>`).join('');
+
+const TB = [
+  ['#d97706', 'Inner Loop — #41 Active Vibration Absorber (T_s3 = 0.1 ms / 10 kHz)', 'Target Bandwidth: 500–1200 Hz (10 ticks / ms)', 10, ' id="timingBar41"'],
+  ['#10b981', 'Middle Loop — #44 Position control system in NC machine (T_s2 = 0.25 ms / 4 kHz)', 'Target Bandwidth: 50–120 Hz (4 ticks / ms)', 4, ''],
+  ['#2563eb', 'Outer Loop — #28 Cutting forces during machining operation (T_s1 = 1.0 ms / 1 kHz)', 'Target Bandwidth: 5–25 Hz (1 major frame / ms)', 1, '']
+];
+$('timing').innerHTML = TB.map(t => `<div class="tb2" style="--c:${t[0]}"><div class="rw" style="flex-wrap:wrap"><b>${t[1]}</b><span style="color:${t[0]};font-weight:600">${t[2]}</span></div><div class="tl"${t[4]} style="grid-template-columns:repeat(${t[3]},1fr)">${'<i></i>'.repeat(t[3])}</div></div>`).join('');
+
+const BM = [
+  ['Peak Contour Error', 'Aerospace rib tolerance: ±2.5 μm', 80, '38.0 μm (Baseline #44 Only)', 7, '1.8 μm (Integrated #28+#41+#44 — 95% Error Reduction)', '#2563eb'],
+  ['Surface Roughness (R_a)', 'Aerospace finish limit: 0.8 μm', 75, '3.40 μm (Severe Chatter Marks)', 12, '0.42 μm (87% Finish Improvement)', '#10b981'],
+  ['Corner Force Overshoot', '300% radial immersion entry', 67, '64.0% Peak Force Surge', 10, '6.8% (Settling Time: 14 ms)', '#d97706']
+];
+$('bench').innerHTML = BM.map(m => `<div class="bm" style="--c:${m[6]}"><div><b>${m[0]}</b><small style="display:block;color:#64748b;font-size:12px">${m[1]}</small></div><div><div class="br"><div class="tk"><i style="width:${m[2]}%"></i></div><span>${m[3]}</span></div><div class="br"><div class="tk"><i style="width:${m[4]}%;background:var(--c)"></i></div><span style="color:var(--c);font-weight:700">${m[5]}</span></div></div></div>`).join('');
+
+const EQ = [
+  ['#2563eb', 'LOOP #28 • DISCRETE PI LAW', 'Adaptive Force Regulation',
+   '\\alpha_f(k) = \\operatorname{sat}_{0.2}^{1.2}\\Big[ \\alpha_f(k-1) + 0.0018\\cdot e_F(k) - 0.0015\\cdot e_F(k-1) \\Big]',
+   'Prevents integrator windup during non-cutting air passes and clamps feedrate within 1 ms on overload.'],
+  ['#10b981', 'LOOP #44 • TUSTIN LEAD-LAG', 'Ball-Screw Servo Plant G_x(s)',
+   'u_x(k) = 0.72\\cdot u_x(k-1) + 48.5\\cdot e_x(k) - 44.2\\cdot e_x(k-1) + K_{v\\text{ff}}\\cdot \\Delta X_{\\text{ref}}(k)',
+   'Parameters: J_e = 0.012 kg·m², B_e = 0.08 N·m·s/rad, K_t = 1.4 N·m/A, 5 nm optical scale feedback.'],
+  ['#d97706', 'LOOP #41 • PRE-WARPED PPF', 'Spindle Chatter Mode G_v(s)',
+   'u_p(k) = 1.685\\cdot u_p(k-1) - 0.942\\cdot u_p(k-2) + K_{\\text{ff}}(k)\\cdot \\big[ 0.128\\cdot a_{\\text{sp}}(k-1) \\big]',
+   'Pre-warped at ω_n = 2π(850) rad/s (m_t = 0.45 kg, ζ_t = 0.018 → 0.185 active damping).']
+];
+$('eqs').innerHTML = EQ.map(e => `
+    <div class="card eqc" style="--c:${e[0]}">
+      <span class="ey">${e[1]}</span>
+      <h4>${e[2]}</h4>
+      <div class="math-card-box">${renderTex(e[3], true)}</div>
+      <p class="nt" style="margin:0">${e[4]}</p>
+    </div>
+  `).join('');
+
+// ---------------------------------------------------------------------------
+// 3. SYSTEM STATE & PARAMETERS (Discrete-Time Physics Unchanged)
+// ---------------------------------------------------------------------------
+const simState = {
+  running: true, tick: 0, timeMs: 0,
+  loop28Enabled: true, loop44Enabled: true, loop41Enabled: true,
+  ff28to41Enabled: true, velFFEnabled: true, preWarpEnabled: true,
+  F_ref: 450.0, V_f0: 360.0, zeta_target: 0.185, axialDepthB: 3.5,
+  F_cut: 450.0, e_F: 0.0, e_F_prev: 0.0, alpha_f: 1.0, K_ff: 1.0,
+  e_x: 1.8, u_x: 4.8, x_v: 0.35, a_sp: 12.0, u_p: 42.5,
+  immersionSpikeTimer: 0, chatterBurstTimer: 0, piezoOverloadTimer: 0,
+  toolAngle: 0, posX: 42.18, posY: 18.40,
+  histLen: 160, histFcut: [], histFref: [], histError: [], histVib: [], histUp: [], histUx: [], orbitPoints: []
+};
+function initBuffers() {
+  simState.histFcut = new Array(simState.histLen).fill(450);
+  simState.histFref = new Array(simState.histLen).fill(450);
+  simState.histError = new Array(simState.histLen).fill(1.5);
+  simState.histVib = new Array(simState.histLen).fill(0.2);
+  simState.histUp = new Array(simState.histLen).fill(40);
+  simState.histUx = new Array(simState.histLen).fill(4.8);
+  simState.orbitPoints = [];
+}
+initBuffers();
+
+// ---------------------------------------------------------------------------
+// 4. UI CONTROLS & INTERACTION HANDLERS
+// ---------------------------------------------------------------------------
+function switchTab(tabId) {
+  ['telemetry', 'blockdiagram', 'stability', 'comparison'].forEach(t => {
+    $('tabView-' + t).classList.toggle('hidden', t !== tabId);
+    const b = $('tabBtn-' + t);
+    b.classList.toggle('tab-btn-active', t === tabId);
+    b.setAttribute('aria-selected', t === tabId);
+  });
+  resizeAllCanvases();
+  refreshMathElements();
+}
+function toggleSimulation() {
+  simState.running = !simState.running;
+  const r = simState.running;
+  $('btnPlayPause').className = 'btn ' + (r ? 'run' : 'pause');
+  $('iconPlayPause').innerHTML = ic(r ? 'pause' : 'play');
+  $('txtPlayPause').textContent = r ? 'RUNNING' : 'PAUSED';
+}
+function resetSimulation() {
+  simState.immersionSpikeTimer = 0; simState.chatterBurstTimer = 0; simState.piezoOverloadTimer = 0;
+  simState.alpha_f = 1.0;
+  $('sliderFref').value = 450; $('sliderFeedrate').value = 360; $('sliderDamping').value = 0.185; $('sliderDepth').value = 3.5;
+  setSystemPreset('integrated');
+  updateSliders();
+  initBuffers();
+}
+function setSystemPreset(preset) {
+  const btnInt = $('preset-integrated'), btnNoC = $('preset-nochatter'), btnBase = $('preset-baseline');
+  [btnInt, btnNoC, btnBase].forEach(b => { b.className = 'pb'; });
+  [btnInt, btnNoC, btnBase].forEach(b => { if (b) b.className = 'pb'; });
+  if (preset === 'integrated') {
+    $('chkLoop28').checked = true; $('chkLoop41').checked = true; $('chkFF28to41').checked = true;
+    $('chkVelFF').checked = true; $('chkPreWarp').checked = true;
+    btnInt.className = 'pb on';
+    if (btnInt) btnInt.className = 'pb on';
+  } else if (preset === 'nochatter') {
+    $('chkLoop28').checked = true; $('chkLoop41').checked = false;
+    btnNoC.className = 'pb on w';
+    if (btnNoC) btnNoC.className = 'pb on warn';
+  } else if (preset === 'baseline') {
+    $('chkLoop28').checked = false; $('chkLoop41').checked = false;
+    btnBase.className = 'pb on e';
+    if (btnBase) btnBase.className = 'pb on err';
+  }
+  updateControllerStates();
+}
+function updateControllerStates() {
+  simState.loop28Enabled = $('chkLoop28').checked;
+  simState.loop41Enabled = $('chkLoop41').checked;
+  simState.ff28to41Enabled = $('chkFF28to41').checked;
+  simState.velFFEnabled = $('chkVelFF').checked;
+  simState.preWarpEnabled = $('chkPreWarp').checked;
+  [['chkLoop28', 'bdBadge28', 'BYPASSED'], ['chkLoop41', 'bdBadge41', 'DISABLED']].forEach(([c, b, offTxt]) => {
+    const on = $(c).checked, u = $(c).closest('.unit'), e = $(b);
+    u.classList.toggle('off', !on);
+    u.querySelector('.st').textContent = on ? 'ACTIVE' : offTxt;
+    if (e) { e.textContent = on ? 'ACTIVE' : offTxt; e.className = 'bdg' + (on ? '' : ' off'); }
+  });
+
+  // Keep preset buttons and badges in sync with current loop states
+  const btnInt = $('preset-integrated'), btnNoC = $('preset-nochatter'), btnBase = $('preset-baseline');
+  const bInt = $('pbBadgeInt'), bNoC = $('pbBadgeNoC'), bBase = $('pbBadgeBase');
+  if (btnInt && btnNoC && btnBase) {
+    [btnInt, btnNoC, btnBase].forEach(b => { b.className = 'pb'; });
+    if (bInt) bInt.innerHTML = `${ ic('check') } Active`;
+    if (bNoC) bNoC.innerHTML = `Chatter Risk`;
+    if (bBase) bBase.innerHTML = `±38 μm Error`;
+
+    if (simState.loop28Enabled && simState.loop41Enabled) {
+      btnInt.className = 'pb on';
+    } else if (simState.loop28Enabled && !simState.loop41Enabled) {
+      btnNoC.className = 'pb on warn';
+      if (bNoC) bNoC.innerHTML = `${ ic('check') } Chatter Risk`;
+    } else if (!simState.loop28Enabled && !simState.loop41Enabled) {
+      btnBase.className = 'pb on err';
+      if (bBase) bBase.innerHTML = `${ ic('check') } ±38 μm Error`;
+    }
+  }
+}
+function updateSliders() {
+  simState.F_ref = parseFloat($('sliderFref').value);
+  simState.V_f0 = parseFloat($('sliderFeedrate').value);
+  simState.zeta_target = parseFloat($('sliderDamping').value);
+  simState.axialDepthB = parseFloat($('sliderDepth').value);
+  $('valFref').textContent = simState.F_ref.toFixed(0) + " N";
+  $('kpiForceRefLabel').textContent = "Ref: " + simState.F_ref.toFixed(0) + " N";
+  $('valFeedrate').textContent = simState.V_f0.toFixed(0) + " mm/min";
+  const mult = (simState.zeta_target / 0.018).toFixed(1);
+  $('valDamping').textContent = simState.zeta_target.toFixed(3) + " (" + mult + "×)";
+  $('valDepth').textContent = simState.axialDepthB.toFixed(2) + " mm";
+  document.querySelectorAll('input[type=range]').forEach(r => r.style.setProperty('--p', ((r.value - r.min) / (r.max - r.min) * 100) + '%'));
+}
+function triggerImmersionSpike() { simState.immersionSpikeTimer = 55; }
+function triggerChatterBurst() { simState.chatterBurstTimer = 65; }
+function triggerPiezoOverload() { simState.piezoOverloadTimer = 50; }
+
+function inspectBlock(blockNum) {
+  const D = {
+    '28': [
+      "INSPECTING CONTROLLER #28 • DISCRETE PI + ANTI-WINDUP (T_s1 = 1.0 ms / 1 kHz)",
+      '#2563eb',
+      "\\alpha_f(k) = \\operatorname{sat}_{0.2}^{1.2}\\Big[ \\alpha_f(k-1) + 0.0018\\cdot e_F(k) - 0.0015\\cdot e_F(k-1) \\ Big]",
+      "Hardware: Kistler 9257B Dynamometer + TI C2000 DSP (IEEE-754 FPU)",
+      "Total Loop Delay: τ_d = 450 μs | Bandwidth: 5–25 Hz"
+    ],
+    '44': [
+      "INSPECTING CONTROLLER #44 • TUSTIN LEAD-LAG SERVO REGULATOR (T_s2 = 0.25 ms / 4 kHz)",
+      '#10b981',
+      "u_x(k) = 0.72\\cdot u_x(k-1) + 48.5\\cdot e_x(k) - 44.2\\cdot e_x(k-1) + K_{v\\text{ff}}\\cdot \\Delta X_{\\text{ref}}(k)",
+      "Hardware: Heidenhain 5 nm Optical Scale (EnDat 2.2) + PMSM IGBT Drive",
+      "Total Loop Delay: τ_d = 125 μs | GM = 11.4 dB, PM = 54.2° at 92 Hz"
+    ],
+    '41': [
+      "INSPECTING CONTROLLER #41 • PRE-WARPED TUSTIN PPF FILTER (T_s3 = 0.1 ms / 10 kHz)",
+      '#d97706',
+      "u_p(k) = 1.685\\cdot u_p(k-1) - 0.942\\cdot u_p(k-2) + K_{\\text{ff}}(k)\\cdot \\big[0.128\\cdot a_{\\text{sp}}(k-1)\\big]",
+      "Hardware: Xilinx Artix-7 FPGA + Piezo Stack (-30V to +150V)",
+      "Total Loop Delay: τ_d = 35 μs (10.7° phase at 850 Hz)"
+    ]
+  };
+  const d = D[blockNum] || D['41'];
+  const t = $('inspTitle'); t.textContent = d[0]; t.style.color = d[1];
+  $('inspEquation').innerHTML = renderTex(d[2], true);
+  $('inspHardware').textContent = d[3];
+  $('inspLatency').textContent = d[4];
+  document.querySelectorAll('.node[data-k]').forEach(n => n.classList.toggle('sel', n.dataset.k === blockNum));
+}
+
+// ---------------------------------------------------------------------------
+// 5. PHYSICS & DISCRETE-TIME DIFFERENCE EQUATION STEPPER
+// ---------------------------------------------------------------------------
+function stepPhysics() {
+  simState.tick++;
+  simState.timeMs += 1.0;
+  const effectiveFeed = simState.V_f0 * (simState.loop28Enabled ? simState.alpha_f : 1.0);
+  simState.toolAngle += (effectiveFeed / 360.0) * 0.035;
+  const cornerFactor = Math.pow(Math.sin(simState.toolAngle * 2.0), 8);
+  let rawImmersionLoad = 1.0 + 0.35 * cornerFactor * (simState.axialDepthB / 3.5);
+  if (simState.immersionSpikeTimer > 0) {
+    rawImmersionLoad += 1.85;
+    simState.immersionSpikeTimer--;
+  }
+
+  // Active damping calculation via Pre-Warped PPF filter (Loop #41)
+  let zeta_eff = 0.018; // Open-loop structural damping of Ti-6Al-4V spindle toolholder
+  if (simState.loop41Enabled) {
+    zeta_eff = simState.preWarpEnabled ? simState.zeta_target : simState.zeta_target * 0.62;
+    if (simState.ff28to41Enabled && simState.loop28Enabled) {
+      zeta_eff = Math.min(0.245, zeta_eff * simState.K_ff);
+    }
+  }
+
+  // Analytical Stability Lobe Boundary: b_lim ∝ zeta_eff (Altintas-Budak Chatter Limit)
+  const b_lim = 1.85 * (zeta_eff / 0.018) * 0.25 + 1.45;
+  const depthRatio = simState.axialDepthB / b_lim;
+  let baseChatterAmp = 0.32;
+  if (!simState.loop41Enabled || depthRatio > 1.05) {
+    baseChatterAmp = simState.loop41Enabled ? 4.5 * (depthRatio - 0.9) : 26.5 * (simState.axialDepthB / 3.5);
+  } else {
+    baseChatterAmp = 0.35 * (0.185 / Math.max(0.02, zeta_eff)) * (simState.axialDepthB / 3.5);
+  }
+  if (simState.chatterBurstTimer > 0) {
+    baseChatterAmp += simState.loop41Enabled ? 2.8 * (simState.chatterBurstTimer / 65) : 18.0;
+    simState.chatterBurstTimer--;
+  }
+
+  // 850 Hz flexural resonance carrier modulated by tooltooth engagement
+  const carrier850 = Math.sin(simState.tick * 1.35) + 0.35 * Math.cos(simState.tick * 2.7);
+  simState.x_v = baseChatterAmp * carrier850;
+  simState.a_sp = Math.abs(simState.x_v) * 34.5 + (Math.random() - 0.5) * 2.5;
+
+  // Cutting force mechanics: Mean force + dynamic regenerative chip thickness ripple
+  const uncompForce = (simState.V_f0 / 360.0) * 450.0 * rawImmersionLoad * (simState.axialDepthB / 3.5);
+  const chatterForceMod = simState.x_v * (simState.loop28Enabled ? 4.2 : 6.5);
+
+  if (simState.piezoOverloadTimer > 0) {
+    simState.alpha_f = 0.30; // Priority 1 Piezo Voltage Guard Clamping
+    simState.piezoOverloadTimer--;
+  } else if (simState.loop28Enabled) {
+    simState.F_cut = Math.max(40, uncompForce * simState.alpha_f + chatterForceMod + (Math.random() - 0.5) * 6.0);
+    simState.e_F = simState.F_ref - simState.F_cut;
+    // Difference equation: Δα_f(k) = 0.0018·e_F(k) - 0.0015·e_F(k-1)
+    const dAlpha = 0.0018 * simState.e_F - 0.0015 * simState.e_F_prev;
+    simState.alpha_f = Math.max(0.20, Math.min(1.20, simState.alpha_f + dAlpha));
+    simState.e_F_prev = simState.e_F;
+    simState.K_ff = simState.ff28to41Enabled ? Math.min(1.35, Math.max(0.9, uncompForce / 450.0)) : 1.0;
+  } else {
+    simState.alpha_f = 1.0;
+    simState.K_ff = 1.0;
+    simState.F_cut = Math.max(40, uncompForce * simState.alpha_f + chatterForceMod + (Math.random() - 0.5) * 6.0);
+    simState.e_F = simState.F_ref - simState.F_cut;
+    simState.e_F_prev = simState.e_F;
+  }
+
+  // Active Piezo Actuator Voltage command (-30V to +150V)
+  if (simState.piezoOverloadTimer > 0) {
+    simState.u_p = 148.2;
+  } else if (simState.loop41Enabled) {
+    const rawUp = 38.0 + simState.K_ff * (Math.abs(simState.x_v) * 14.5 + (rawImmersionLoad - 1.0) * 32.0);
+    simState.u_p = Math.max(-30.0, Math.min(150.0, rawUp + 12.0 * Math.sin(simState.tick * 0.8)));
+  } else {
+    simState.u_p = 0.0;
+  }
+
+  // CNC Toolpath contour tracking error & Ball screw servo effort
+  const quasiStaticDeflection = (simState.F_cut / 450.0) * (simState.loop28Enabled ? 0.85 : 5.2);
+  const velLag = simState.velFFEnabled ? 0.35 : 2.10;
+  const chatterContribution = Math.abs(simState.x_v) * 0.95;
+  const peakErrMag = quasiStaticDeflection + velLag + chatterContribution;
+  simState.e_x = peakErrMag * Math.sin(simState.tick * 0.45) + (Math.random() - 0.5) * 0.25;
+  simState.u_x = 3.2 + (simState.F_cut / 450.0) * 1.65 + Math.abs(simState.e_x) * 0.15;
+
+  simState.histFcut.push(simState.F_cut); simState.histFcut.shift();
+  simState.histFref.push(simState.F_ref); simState.histFref.shift();
+  simState.histError.push(simState.e_x); simState.histError.shift();
+  simState.histVib.push(simState.x_v); simState.histVib.shift();
+  simState.histUp.push(simState.u_p); simState.histUp.shift();
+  simState.histUx.push(simState.u_x); simState.histUx.shift();
+
+  const orbitAngle = (simState.tick * 0.12) % (Math.PI * 2);
+  const orbitR = Math.max(0.2, peakErrMag);
+  simState.orbitPoints.push({ x: orbitR * Math.cos(orbitAngle), y: orbitR * Math.sin(orbitAngle) });
+  if (simState.orbitPoints.length > 75) simState.orbitPoints.shift();
+
+  updateDashboardKPIs(peakErrMag, zeta_eff, b_lim, effectiveFeed);
+}
+
+// ---------------------------------------------------------------------------
+// 6. DOM KPI CARDS, TABLES & SPARKLINES
+// ---------------------------------------------------------------------------
+function spark(id, a, lo, hi) {
+  const e = $(id);
+  if (e) e.setAttribute('points', a.filter((_, i) => i % 4 === 0).map((v, i) => (i * 100 / 39).toFixed(1) + ',' + (22 - 20 * Math.min(1, Math.max(0, (v - lo) / (hi - lo)))).toFixed(1)).join(' '));
+}
+function updateDashboardKPIs(peakErrMag, zeta_eff, b_lim, effectiveFeed) {
+  const barErr = $('barContourError'), ok = peakErrMag <= 2.5;
+  T('kpiContourError', "±" + peakErrMag.toFixed(2) + " μm");
+  barErr.style.width = Math.min(100, (peakErrMag / 10.0) * 100) + "%";
+  T('badgeTolerance', ok ? "PASS (≤2.5 μm)" : "VIOLATION (>2.5 μm)");
+  $('badgeTolerance').className = 'pill ' + (ok ? 'ok' : 'bad');
+  barErr.parentElement.classList.toggle('bad', !ok);
+
+  T('kpiCuttingForce', simState.F_cut.toFixed(0) + " N");
+  T('badgeForce', "α_f = " + simState.alpha_f.toFixed(2));
+  $('barCuttingForce').style.width = Math.min(100, (simState.F_cut / 1000) * 100) + "%";
+
+  const Ra = Math.min(4.2, 0.34 + Math.abs(simState.x_v) * 0.14);
+  T('kpiRoughness', Ra.toFixed(2) + " μm");
+  T('badgeRoughness', "ζ_eff = " + zeta_eff.toFixed(3));
+  $('barRoughness').style.width = Math.min(100, (Ra / 2.0) * 100) + "%";
+  $('barRoughness').parentElement.classList.toggle('bad', Ra > 0.8);
+
+  T('kpiPiezoVolt', (simState.u_p >= 0 ? "+" : "") + simState.u_p.toFixed(1) + " V");
+  T('kpiServoCurr', simState.u_x.toFixed(1) + " A");
+  $('barPiezoVolt').style.width = Math.min(100, ((simState.u_p + 30) / 180) * 100) + "%";
+  const sat = simState.u_p > 145.0;
+  T('badgeActuator', sat ? "SATURATION (>145V)" : "LINEAR RANGE");
+  $('badgeActuator').className = 'pill' + (sat ? ' bad' : '');
+  $('barPiezoVolt').parentElement.classList.toggle('bad', sat);
+
+  spark('spkErr', simState.histError.map(Math.abs), 0, 10);
+  spark('spkForce', simState.histFcut, 100, 1000);
+  spark('spkRa', simState.histVib.map(Math.abs), 0, 15);
+  spark('spkUp', simState.histUp, -30, 150);
+
+  const sT = $('kpiArbitrationState'), dot = $('dotArbitration');
+  if (simState.piezoOverloadTimer > 0 || simState.u_p > 145.0) {
+    sT.textContent = "PRIORITY 1 OVERRIDE ACTIVE"; sT.style.color = '#b91c1c';
+    T('kpiArbitrationDesc', "#41 Piezo >145V → #28 Clamps α_f=0.30 in 1 ms");
+    dot.className = 'dot bad';
+  } else if (simState.immersionSpikeTimer > 0) {
+    sT.textContent = "PRIORITY 2 FORCE LIMITING"; sT.style.color = '#1d4ed8';
+    T('kpiArbitrationDesc', "Corner Spike → #28 Scaling α_f=" + simState.alpha_f.toFixed(2) + " & Pre-loading #41");
+    dot.className = 'dot warn';
+  } else {
+    sT.textContent = "COOPERATIVE SYNERGY"; sT.style.color = '#4c1d95';
+    T('kpiArbitrationDesc', "#28 Cascade → #44 | #28 FF → #41 Active");
+    dot.className = 'dot';
+  }
+  $('trgSpike').classList.toggle('live', simState.immersionSpikeTimer > 0);
+  $('trgChatter').classList.toggle('live', simState.chatterBurstTimer > 0);
+  $('trgPiezo').classList.toggle('live', simState.piezoOverloadTimer > 0);
+
+  simState.posX = 50 + 32 * Math.cos(simState.toolAngle);
+  simState.posY = 25 + 16 * Math.sin(simState.toolAngle * 2);
+  T('lblPosX', simState.posX.toFixed(3) + " mm");
+  T('lblPosY', simState.posY.toFixed(3) + " mm");
+  T('lblEffFeed', effectiveFeed.toFixed(0) + " mm/min");
+  T('lblOrbitRadius', peakErrMag.toFixed(2) + " μm");
+
+  T('bdValFref', simState.F_ref.toFixed(1) + " N");
+  T('bdValEforce', "e_F=" + simState.e_F.toFixed(1) + "N → α_f=" + simState.alpha_f.toFixed(2));
+  T('bdValCoupling', "α_f=" + simState.alpha_f.toFixed(2) + " → #44 | K_ff=" + simState.K_ff.toFixed(2) + " → #41");
+  T('bdValFcut', simState.F_cut.toFixed(1) + " N (1 kHz ADC)");
+  T('bdValXref', "V_eff = " + effectiveFeed.toFixed(0) + " mm/m");
+  T('bdValEpos', "e_x=" + peakErrMag.toFixed(2) + " μm → u_x=" + simState.u_x.toFixed(1) + " A");
+  T('bdValEvib', "a_sp → u_p=" + simState.u_p.toFixed(1) + " V (ζ=" + zeta_eff.toFixed(3) + ")");
+  T('bdValAcc', simState.a_sp.toFixed(1) + " m/s² (10 kHz)");
+
+  T('tblValFref', simState.F_ref.toFixed(1) + " N");
+  T('tblValFcut', simState.F_cut.toFixed(1) + " N");
+  T('tblValAlpha', simState.alpha_f.toFixed(3));
+  T('tblValUx', simState.u_x.toFixed(2) + " A");
+  T('tblValXm', simState.posX.toFixed(3) + " mm");
+  T('tblValUp', (simState.u_p >= 0 ? "+" : "") + simState.u_p.toFixed(1) + " V");
+  T('tblValAcc', simState.a_sp.toFixed(1) + " m/s²");
+
+  T('lblPole41', "|z_41| = " + (0.994 - (zeta_eff - 0.018) * 0.91).toFixed(3) + " (Stable)");
+  T('lblCurrentDepthSLD', "b = " + simState.axialDepthB.toFixed(2) + " mm (b_lim = " + b_lim.toFixed(2) + " mm)");
+  const sv = $('lblSLDVerdict'), stable = simState.axialDepthB <= b_lim;
+  sv.textContent = stable ? "STABLE (Below Active Lobe)" : "CHATTER REGIME (b > b_lim)";
+  sv.style.color = stable ? '#10b981' : '#ef4444';
+}
+
+// ---------------------------------------------------------------------------
+// 7. HiDPI MATTE OFF-WHITE CANVAS RENDERING (Clean, Crisp Typography)
+// ---------------------------------------------------------------------------
+const CIDS = ['canvasScopeForce', 'canvasScopeError', 'canvasScopeVibration', 'canvasScopeEffort', 'canvasToolpath', 'canvasPolarOrbit', 'canvasZPlane', 'canvasStabilityLobes'];
+function resizeAllCanvases() {
+  const d = window.devicePixelRatio || 1;
+  CIDS.forEach(id => {
+    const c = $(id);
+    if (c && c.parentElement) {
+      const r = c.parentElement.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0) {
+        c.width = Math.round(r.width * d); c.height = Math.round(r.height * d);
+        c._w = r.width; c._h = r.height; c._d = d;
+      }
+    }
+  });
+}
+window.addEventListener('resize', resizeAllCanvases);
+
+function prep(id) {
+  const c = $(id);
+  if (!c || !c._w) return null;
+  const x = c.getContext('2d');
+  x.setTransform(c._d, 0, 0, c._d, 0, 0);
+  x.clearRect(0, 0, c._w, c._h);
+  return { ctx: x, w: c._w, h: c._h };
+}
+
+function drawGrid(ctx, w, h) {
+  ctx.strokeStyle = "rgba(0, 0, 0, 0.045)"; ctx.lineWidth = 1; ctx.beginPath();
+  for (let x = 0; x < w; x += 40) { ctx.moveTo(x + .5, 0); ctx.lineTo(x + .5, h); }
+  for (let y = 0; y < h; y += 35) { ctx.moveTo(0, y + .5); ctx.lineTo(w, y + .5); }
+  ctx.stroke();
+}
+
+const tx = (ctx, s, x, y, c, al) => { ctx.font = '500 10px "IBM Plex Mono",monospace'; ctx.fillStyle = c || '#64748b'; ctx.textAlign = al || 'left'; ctx.fillText(s, x, y); };
+
+function glow(ctx, x, y, r, c) {
+  ctx.save(); ctx.shadowColor = c; ctx.shadowBlur = 10; ctx.fillStyle = c;
+  ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill(); ctx.restore();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.stroke();
+}
+
+function trace(ctx, a, w, yf, col, lw, fill, base, dot) {
+  const n = a.length - 1;
+  ctx.beginPath();
+  a.forEach((v, i) => { const x = i / n * w, y = yf(v); if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); });
+  ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.lineJoin = 'round';
+  ctx.stroke();
+  if (fill) { ctx.lineTo(w, base); ctx.lineTo(0, base); ctx.closePath(); ctx.fillStyle = fill; ctx.fill(); }
+  if (dot) glow(ctx, w - 3, yf(a[n]), 3.8, col);
+}
+
+function drawOscilloscopes() {
+  let p = prep('canvasScopeForce');
+  if (p) {
+    const { ctx, w, h } = p; drawGrid(ctx, w, h);
+    const yr = v => h - ((v - 100) / 900) * h, yc = v => Math.max(4, Math.min(h - 4, h - ((v - 100) / 900) * h));
+    [250, 500, 750].forEach(v => tx(ctx, v + ' N', 6, yr(v) - 3));
+    ctx.setLineDash([5, 4]); trace(ctx, simState.histFref, w, yr, '#60a5fa', 1.8); ctx.setLineDash([]);
+    trace(ctx, simState.histFcut, w, yc, '#2563eb', 2.2, 'rgba(37, 99, 235, 0.08)', h, 1);
+  }
+  p = prep('canvasScopeError');
+  if (p) {
+    const { ctx, w, h } = p; drawGrid(ctx, w, h);
+    const midY = h / 2, sc = (h / 2) / 12.0;
+    ctx.fillStyle = "rgba(16, 185, 129, 0.08)"; ctx.fillRect(0, midY - 2.5 * sc, w, 5.0 * sc);
+    ctx.strokeStyle = "#ef4444"; ctx.lineWidth = 1.2; ctx.setLineDash([4, 4]); ctx.beginPath();
+    ctx.moveTo(0, midY - 2.5 * sc); ctx.lineTo(w, midY - 2.5 * sc); ctx.moveTo(0, midY + 2.5 * sc); ctx.lineTo(w, midY + 2.5 * sc);
+    ctx.stroke(); ctx.setLineDash([]);
+    [-10, 0, 10].forEach(v => tx(ctx, (v > 0 ? '+' : '') + v + ' μm', 6, midY - v * sc - 3));
+    trace(ctx, simState.histError, w, v => Math.max(4, Math.min(h - 4, midY - v * sc)), '#10b981', 2.2, 'rgba(16, 185, 129, 0.10)', midY, 1);
+  }
+  p = prep('canvasScopeVibration');
+  if (p) {
+    const { ctx, w, h } = p; drawGrid(ctx, w, h);
+    const midY = h / 2, sc = (h / 2) / 15.0;
+    [-10, 0, 10].forEach(v => tx(ctx, (v > 0 ? '+' : '') + v + ' μm', 6, midY - v * sc - 3));
+    trace(ctx, simState.histVib, w, v => Math.max(4, Math.min(h - 4, midY - v * sc)), '#d97706', 2, 'rgba(217, 119, 6, 0.08)', midY, 1);
+  }
+  p = prep('canvasScopeEffort');
+  if (p) {
+    const { ctx, w, h } = p; drawGrid(ctx, w, h);
+    const yv = v => h - ((v + 30) / 190) * h, ySat = h - ((145 + 30) / 190) * h;
+    ctx.strokeStyle = "#ef4444"; ctx.lineWidth = 1.2; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.moveTo(0, ySat); ctx.lineTo(w, ySat); ctx.stroke(); ctx.setLineDash([]);
+    tx(ctx, '+145 V saturation', w - 6, ySat - 3, '#ef4444', 'right');
+    [0, 50, 100].forEach(v => tx(ctx, v + ' V', 6, yv(v) - 3));
+    tx(ctx, 'u_x: 0–10 A', w - 6, h - 6, '#10b981', 'right');
+    trace(ctx, simState.histUx, w, v => h - (v / 10) * h, '#10b981', 1.6);
+    trace(ctx, simState.histUp, w, yv, '#7c3aed', 2.2, 'rgba(124, 58, 237, 0.08)', h, 1);
+  }
+}
+
+function drawToolpathAndOrbit() {
+  let p = prep('canvasToolpath');
+  if (p) {
+    const { ctx, w, h } = p;
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.08)"; ctx.lineWidth = 1; ctx.beginPath();
+    for (let x = 0; x < w; x += 36) { ctx.moveTo(x + .5, 0); ctx.lineTo(x + .5, h); }
+    for (let y = 0; y < h; y += 36) { ctx.moveTo(0, y + .5); ctx.lineTo(w, y + .5); }
+    ctx.stroke();
+    const cx = w / 2, cy = h / 2, rx = w * 0.34, ry = h * 0.30;
+    ctx.fillStyle = "rgba(245, 158, 11, 0.22)";
+    [0.25, 0.75, 1.25, 1.75].forEach(m => {
+      const ang = m * Math.PI;
+      ctx.beginPath(); ctx.arc(cx + rx * Math.cos(ang), cy + ry * Math.sin(ang * 2) * 0.65, 24, 0, Math.PI * 2); ctx.fill();
+    });
+    ctx.strokeStyle = "#10b981"; ctx.lineWidth = 2.5; ctx.beginPath();
+    for (let a = 0; a <= Math.PI * 2.05; a += 0.04) {
+      const px = cx + rx * Math.cos(a), py = cy + ry * Math.sin(a * 2) * 0.65;
+      if (a === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+    glow(ctx, cx + rx * Math.cos(simState.toolAngle), cy + ry * Math.sin(simState.toolAngle * 2) * 0.65, 8, '#38bdf8');
+  }
+  p = prep('canvasPolarOrbit');
+  if (p) {
+    const { ctx, w, h } = p;
+    const cx = w / 2, cy = h / 2, maxR = Math.min(cx, cy) - 22, sc = maxR / 6.0;
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.07)"; ctx.lineWidth = 1;
+    [2, 4, 6].forEach(m => { ctx.beginPath(); ctx.arc(cx, cy, m * sc, 0, Math.PI * 2); ctx.stroke(); tx(ctx, m + ' μm', cx + m * sc * 0.707 + 4, cy - m * sc * 0.707 - 2); });
+    ctx.beginPath(); ctx.moveTo(cx - maxR, cy); ctx.lineTo(cx + maxR, cy); ctx.moveTo(cx, cy - maxR); ctx.lineTo(cx, cy + maxR); ctx.stroke();
+    ctx.strokeStyle = "#10b981"; ctx.lineWidth = 1.8; ctx.setLineDash([5, 3]); ctx.beginPath(); ctx.arc(cx, cy, 2.5 * sc, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+    if (simState.orbitPoints.length > 1) {
+      const cl = (v) => Math.max(-maxR, Math.min(maxR, v * sc));
+      ctx.strokeStyle = "#6366f1"; ctx.lineWidth = 2; ctx.beginPath();
+      simState.orbitPoints.forEach((pt, i) => { const px = cx + cl(pt.x), py = cy + cl(pt.y); if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py); });
+      ctx.stroke();
+      const last = simState.orbitPoints[simState.orbitPoints.length - 1];
+      glow(ctx, cx + cl(last.x), cy + cl(last.y), 4.5, '#d97706');
+    }
+  }
+}
+
+function drawZPlaneAndSLD() {
+  let p = prep('canvasZPlane');
+  if (p) {
+    const { ctx, w, h } = p;
+    const cx = w / 2, cy = h / 2, rUnit = Math.min(cx, cy) - 24;
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.12)"; ctx.lineWidth = 1.2; ctx.beginPath();
+    ctx.moveTo(cx - rUnit - 14, cy); ctx.lineTo(cx + rUnit + 14, cy); ctx.moveTo(cx, cy - rUnit - 14); ctx.lineTo(cx, cy + rUnit + 14); ctx.stroke();
+    tx(ctx, 'Re(z)', cx + rUnit + 14, cy + 14, null, 'right'); tx(ctx, 'Im(z)', cx + 6, cy - rUnit - 16);
+    ctx.strokeStyle = "#64748b"; ctx.lineWidth = 1.6; ctx.setLineDash([6, 4]); ctx.beginPath(); ctx.arc(cx, cy, rUnit, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+    tx(ctx, '|z| = 1', cx - rUnit * 0.72, cy - rUnit * 0.74, '#475569', 'right');
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.06)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(cx, cy, rUnit * 0.84, 0, Math.PI * 2); ctx.stroke();
+    const olX = cx + rUnit * 0.78, olY1 = cy - rUnit * 0.61, olY2 = cy + rUnit * 0.61;
+    ctx.strokeStyle = "#ef4444"; ctx.lineWidth = 2.5;
+    [olY1, olY2].forEach(py => { ctx.beginPath(); ctx.moveTo(olX - 5, py - 5); ctx.lineTo(olX + 5, py + 5); ctx.moveTo(olX + 5, py - 5); ctx.lineTo(olX - 5, py + 5); ctx.stroke(); });
+    const zeta_eff = simState.loop41Enabled ? simState.zeta_target : 0.018;
+    const r41 = Math.max(0.68, 0.994 - (zeta_eff - 0.018) * 0.91);
+    const clX = cx + rUnit * r41 * 0.785, clY1 = cy - rUnit * r41 * 0.615, clY2 = cy + rUnit * r41 * 0.615;
+    ctx.strokeStyle = "#d97706"; ctx.lineWidth = 1.8; ctx.beginPath();
+    ctx.moveTo(olX, olY1); ctx.lineTo(clX, clY1); ctx.moveTo(olX, olY2); ctx.lineTo(clX, clY2); ctx.stroke();
+    glow(ctx, clX, clY1, 5.5, '#d97706'); glow(ctx, clX, clY2, 5.5, '#d97706');
+    ctx.fillStyle = "#10b981";
+    ctx.beginPath(); ctx.arc(cx + rUnit * 0.84, cy - rUnit * 0.16, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + rUnit * 0.84, cy + rUnit * 0.16, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#2563eb"; ctx.beginPath(); ctx.arc(cx + rUnit * 0.82, cy, 5.5, 0, Math.PI * 2); ctx.fill();
+    tx(ctx, '× open-loop #41 (|z|=0.994)', 8, h - 8, '#ef4444'); tx(ctx, '● #41   ● #44   ● #28', w - 8, h - 8, '#64748b', 'right');
+  }
+  p = prep('canvasStabilityLobes');
+  if (p) {
+    const { ctx, w, h } = p; drawGrid(ctx, w, h);
+    ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 1.8; ctx.beginPath();
+    for (let x = 0; x <= w; x += 4) {
+      const lobe = Math.abs(Math.sin((x / w) * Math.PI * 3.5));
+      const y = h - ((1.4 + 1.6 * Math.pow(lobe, 1.5)) / 7.0) * h;
+      if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    const boost = simState.loop41Enabled ? (simState.zeta_target / 0.018) * 0.24 : 0.0;
+    ctx.strokeStyle = "#d97706"; ctx.lineWidth = 2.4; ctx.beginPath();
+    for (let x = 0; x <= w; x += 4) {
+      const lobe = Math.abs(Math.sin((x / w) * Math.PI * 3.5));
+      const bVal = (1.4 + boost * 1.1) + (1.6 + boost * 1.2) * Math.pow(lobe, 1.5);
+      const y = Math.max(6, h - (bVal / 7.0) * h);
+      if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    tx(ctx, 'b_lim [mm]', 6, 12); tx(ctx, 'Spindle speed [RPM] →', w - 6, h - 6, null, 'right');
+    tx(ctx, '— open-loop', 6, h - 20, '#94a3b8'); tx(ctx, '— active #41 + #28', 6, h - 8, '#d97706');
+    glow(ctx, w * 0.58, h - (simState.axialDepthB / 7.0) * h, 6, '#2563eb');
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 8. INITIALIZATION & MAIN ANIMATION LOOP
+// ---------------------------------------------------------------------------
+let animFrameId = null;
+function renderLoop(now) {
+  drawDotMatrix(now);
+  animFrameId = requestAnimationFrame(renderLoop);
+}
+
+window.onload = function () {
+  initDotCanvas();
+  resizeAllCanvases();
+  updateSliders();
+  updateControllerStates();
+  inspectBlock('41');
+  refreshMathElements();
+
+  // Halftone Dot-Matrix Background Animation (Image 1 replica)
+  animFrameId = requestAnimationFrame(renderLoop);
+
+  // Discrete-Time Physics & Canvas Telemetry Loop
+  setInterval(() => {
+    if (simState.running) stepPhysics();
+    drawOscilloscopes();
+    drawToolpathAndOrbit();
+    drawZPlaneAndSLD();
+  }, 45);
+
+  // Poll for late KaTeX CDN loading to seamlessly upgrade math markup
+  let checkKatexAttempts = 0;
+  const katexChecker = setInterval(() => {
+    checkKatexAttempts++;
+    if (window.katex) {
+      refreshMathElements();
+      inspectBlock('41');
+      clearInterval(katexChecker);
+    } else if (checkKatexAttempts > 20) {
+      clearInterval(katexChecker);
+    }
+  }, 200);
+};
+  </script>
+</body>
+
+</html>
